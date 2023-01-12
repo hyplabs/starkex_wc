@@ -1,0 +1,22 @@
+{
+  "name": "wallet_connect_wallet",
+  "version": "1.0.0",
+  "description": "the wallet server for WalletConnect",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "npx jest browser_tests.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@walletconnect/sign-client": "^2.1.5",
+    "jsdom": "^21.0.0",
+    "lokijs": "^1.5.12",
+    "sql.js": "^1.8.0",
+    "sqljs": "github:langpavel/node-sqljs"
+  },
+  "devDependencies": {
+    "jest": "^29.3.1"
+  }
+}
