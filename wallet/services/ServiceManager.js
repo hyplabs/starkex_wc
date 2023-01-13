@@ -9,7 +9,7 @@
  * Examples include: ethers.js, starkEx.js, and other classes
  * The ServiceManager allows for Interfaces:
  * Examples include: CLI, WalletConnect
- * 
+ *  
  * The major objects within Service Manager are 
  *  - services - Services are defined as Objects that imlement the IService interface.
  *  --- events - Both Interfaces and Services may subscribe to events. Only Services emit events.

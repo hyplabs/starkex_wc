@@ -11,6 +11,9 @@
   "license": "ISC",
   "dependencies": {
     "@walletconnect/sign-client": "^2.1.5",
+    "bip39": "^3.0.4",
+    "ethereumjs-util": "^7.1.5",
+    "ethers": "^5.7.2",
     "jsdom": "^21.0.0",
     "lokijs": "^1.5.12",
     "sql.js": "^1.8.0",

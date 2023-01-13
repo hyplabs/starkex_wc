@@ -1,12 +1,21 @@
 const ethers = require('ethers');
 const {IService} = require('./ServiceManager.js');
+const crypto = require('crypto');
+const BIP39 = require('bip39');
+const ethUtil = require('ethereumjs-util');
 
+//const hdkey = require('hdkey');
+//const EC = require('elliptic').ec;
+//const util = require('util');
+//function sha256(string) {
+//  return crypto.createHash('sha256').update(string).digest('hex');
+//}
 
 /**
- * IService Interface (class)
- * Simply cut and paste IService into ./services, and customize, to add a new service into the ServiceManager
+ * EthWalletGateway: IService
+ * An example implementation of a wallet + gateway combination. Partial implementation meant to be instuctive in nature.
  */
-class EthWalletGateway extends IService {
+class EthWalletGateway /* implements IService */ {
     /**
      * Create a new ServiceManager instance.
      * @param {Object} serviceManager our Service Manager
@@ -20,7 +29,7 @@ class EthWalletGateway extends IService {
      * @return {string}
      */        
     serviceName(){
-        return "iservice"
+        return "eth_wallet_gateway"
     }
 
     /**
@@ -30,6 +39,7 @@ class EthWalletGateway extends IService {
      * @return {Object}
      */        
     run(args,metadata){
+        return {"error":"Likely not using service router in this simple example Wallet Service"}
         let event = {...metadata};
         //this.serviceManager.emit(this.serviceName(), metadata); // emit an event
         return this[metadata['command']](args);
@@ -41,15 +51,16 @@ class EthWalletGateway extends IService {
      */    
     methodRoles(){
         return {
-            "admin": {"hello_world":this.run.bind(this), 
-                     "echo_args":this.run.bind(this), 
-                     "set_hello":this.run.bind(this)},
-            "user" : {"echo_args":this.run.bind(this), 
-                    "hello_world":this.run.bind(this)}
+            "admin": {"generate_eth_account":this.generate_eth_account.bind(this),
+                        "derive_account_from_private_key":this.derive_account_from_private_key.bind(this),
+                     },
+            "user" : {}
         };
     }  
     
-    generate_eth_account() {
+    async generate_eth_account(args,metadata) {
+        // args -- unused
+        // metadata -- unused
         const mnemonic = BIP39.generateMnemonic();
         let buf = await BIP39.mnemonicToSeed(mnemonic);    
         const privateKey = ethUtil.keccak(buf);
@@ -64,7 +75,9 @@ class EthWalletGateway extends IService {
             privateKey:privateKey.toString('hex')}
     }
       
-    derive_account_from_private_key(private_key_hex){
+    derive_account_from_private_key(args,metadata){
+        // metadata -- unused        
+        let private_key_hex = args["privateKey"];
         let accountData = {'privateKey':private_key_hex}
         const privateKeyBuffer = ethUtil.toBuffer("0x"+private_key_hex);
         const privateKey = privateKeyBuffer;      
@@ -74,58 +87,11 @@ class EthWalletGateway extends IService {
         accountData.address= address; 
         accountData.publicKey= publicKey.toString('hex');
         return accountData
-    }
-        
+    }  
 } 
-///////////////////////////////////
+module.exports = EthWalletGateway;
 
-const crypto = require('crypto');
-function sha256(string) {
-  return crypto.createHash('sha256').update(string).digest('hex');
-}
-const BIP39 = require('bip39');
-const hdkey = require('hdkey');
-const EC = require('elliptic').ec;
-const ethUtil = require('ethereumjs-util');
-const util = require('util');
-
-async function generate_account() {
-    const mnemonic = BIP39.generateMnemonic();
-    let buf = await BIP39.mnemonicToSeed(mnemonic);    
-    const privateKey = ethUtil.keccak(buf);
-    const publicKey = ethUtil.privateToPublic(privateKey);
-    const pubKeyHash = ethUtil.keccak(publicKey);    
-    const address = ethUtil.publicToAddress(publicKey).toString('hex');
-    
-    return {
-        mnemonic:mnemonic,
-        address:address,
-        publicKey:publicKey.toString('hex'),
-        privateKey:privateKey.toString('hex')}
-    console.log("FINISHED KEYGEN");
-}
-  
-async function derive_account_from_private_key(private_key_hex){
-    let accountData = {'privateKey':private_key_hex}
-    const privateKeyBuffer = ethUtil.toBuffer("0x"+private_key_hex);
-    const privateKey = privateKeyBuffer;      
-    const publicKey = ethUtil.privateToPublic(privateKey);    
-    const pubKeyHash = ethUtil.keccak(publicKey);
-    const address = ethUtil.publicToAddress(publicKey).toString('hex');
-    accountData.address= address; 
-    accountData.publicKey= publicKey.toString('hex');
-    return accountData
-}
-
-
-module.exports = {
-    generate_account: generate_account,
-    derive_account_from_private_key:derive_account_from_private_key
-};
-
-
-
-
+/*
 class EthWalletGateway {
     constructor() {
     }
@@ -181,3 +147,4 @@ class EthWalletGateway {
     }
     
 }
+*/
