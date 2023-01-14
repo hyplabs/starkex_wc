@@ -9,5 +9,8 @@
   "author": "Justin Girard",
   "license": "MIT",
   "dependencies": {
+    "@walletconnect/core": "^2.2.1",
+    "@walletconnect/sign-client": "^2.2.1",
+    "lokijs": "^1.5.12"
   }
 }

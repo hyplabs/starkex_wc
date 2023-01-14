@@ -5,7 +5,7 @@ import { inspect } from 'util';
 import StorageEngine from './storage_engine.js';
 import { TEST_CONNECT_PARAMS,TEST_APPROVE_PARAMS,TEST_REQUIRED_NAMESPACES,TEST_RESPOND_PARAMS} from "./values.js"
 
-
+ 
 
 
 /**
@@ -102,10 +102,9 @@ function addAccountsToNamespaces(namespaces)
   // This assumes a namespace eip155 exists.
 
 }
+
+
 signClient.on("session_proposal", async (event) => {
-
-
-
   console.log("Session Event");
   console.log(inspect(event, { depth: null, colors: true }));
   if (approveNamespaces(event.params.requiredNamespaces) == false)

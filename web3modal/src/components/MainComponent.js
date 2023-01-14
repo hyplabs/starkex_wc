@@ -1,9 +1,6 @@
 import { SignClient } from '@walletconnect/sign-client'
 import { Web3Modal } from '@web3modal/standalone'
 
-
-
-
 function MainComponent() {
   const projectId = 'b700887b888adad39517894fc9ab22e1'
   const namespaces = {
@@ -32,7 +29,6 @@ function MainComponent() {
     console.log("SIGN RESP")
     console.log(result);
   }
-
 
   let doConnect = async () =>{
     try {
@@ -92,10 +88,6 @@ function handleWalletEvents(signClient){
 });
 }
 
-
-  
-
-  
 
 
   return (

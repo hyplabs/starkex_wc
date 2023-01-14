@@ -4,7 +4,7 @@ import { Core } from "@walletconnect/core";
 const signClient = await SignClient.init({
   projectId: "b700887b888adad39517894fc9ab22e1",
   //optional parameters
-  relayUrl: "wss://relay.walletconnect.com",
+  relayUrl: "wss://relay.walletconnect.com", 
   metadata: {
     name: "Wallet name",
     description: "A short description for your wallet",
