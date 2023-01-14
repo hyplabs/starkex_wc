@@ -2,7 +2,7 @@
  * Use this Driver to support connecting to the Service Manager with Wallet Connect, like this:
  * dApp -- WalletConnect Relay --- WCDriver --- ServiceManager -- Services
  * 
- * The WCDriver encapsulates all WalletConnect support. It intercepts all WC requests, and transforms them into 
+ * The WCDriver encapsulates all WalletConnect support, on the wallet side. It intercepts all WC requests, and transforms them into 
  * requests for the ServiceManager. In the context of a larger application, other classes may also be using the ServiceManager.
  * In this case, another interface (like a CLI), may be able take privilaged actions that the WCDriver can not.
  * 
@@ -13,6 +13,7 @@ const { inspect } = require( 'util') ;
 class WCDriver{
     constructor(){
         this.signClient = undefined;
+        this.system_topics = {};
     }
     // First you have to initialize, and set up lisenting for WC Events. None will come through, but get ready!
     async listen(){
@@ -60,19 +61,53 @@ class WCDriver{
               }
           }
           console.log("Session Approving....");
-          
-            let prms   =  this.signClient.approve(apprv).then(({topic, acknowledged})=>{
+          /*          
+          let prms   =  this.signClient.approve(apprv).then(({topic, acknowledged})=>{
 
               console.log("Session Event Ack");
               console.log(acknowledged);
               console.log("Session Event Topic");
               console.log(topic);
-  
+              return {topic, acknowledged};
           });
           console.log("Finished....");
           await prms;
-      });          
+          this.system_topics[prms.topic] =  event;*/
+          let vals   =  await this.signClient.approve(apprv);
+          console.log("Session Event Ack");
+          console.log(vals.acknowledged);
+          console.log("Session Event Topic");
+          console.log(vals.topic);
+          this.system_topics[vals.topic] =  event;
+
+
+        });          
   }
+
+
+    async SendTestMessage(){
+
+      console.log("Sending Message to dApp");
+      let keys = Object.keys(this.system_topics);
+        console.log("Ping !");
+        const result = await this.signClient.request({
+          topic: keys[0],
+          chainId: "eip155:1",
+          request: {
+            id: 1,
+            jsonrpc: "2.0",
+            method: "personal_sign",
+            params: [
+              "0x1d85568eEAbad713fBB5293B45ea066e552A90De",
+              "0x7468697320697320612074657374206d65737361676520746f206265207369676e6564",
+            ],
+          },
+        });
+        console.log("Got response from dApp");
+        console.log(result);
+  
+
+    }
 
     //Second, to allow events from a device, you need to pair 
     async pair(auth_code)

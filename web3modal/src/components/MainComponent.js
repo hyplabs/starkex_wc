@@ -67,6 +67,12 @@ function handleWalletEvents(signClient){
   signClient.on("session_request", (event) => {
     console.log ("SESSION REQUEST");
     console.log(event);
+    this.signClient.respond({
+                          "topic": event.topic,
+                          "response":{"id":event.id,
+                                    "jsonrpc":"2.0",
+                                    "result":{'test_message':'hey from wallet'}}});
+
   });
     
   signClient.on("session_update", ({ topic, params }) => {

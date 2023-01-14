@@ -33,6 +33,21 @@ class WCRemoteWallet{
         return {'deep_link':uri,'approval':approval }
     }
 
+
+    async listen(){
+      this.signClient.on("session_request", (event) => {
+        console.log ("APP SESSION REQUEST");
+        console.log(event);
+        this.signClient.respond({
+                              "topic": event.topic,
+                              "response":{"id":event.id,
+                                        "jsonrpc":"2.0",
+                                        "result":{'test_message':'hey from APP'}}});
+    
+      });
+  
+    }
+
     setSessionApproval(data)
     {
       this.sessionApproval = data; 
@@ -83,7 +98,7 @@ test('pretend to be a dApp user also operating a CLI wallet', async () => {
     let cmdSetup = await cli.listen();
     let linkAndApprove = await app.doConnect();
     console.log("The link" + linkAndApprove['deep_link']);
-    
+    await app.listen();    
     // Step 2 - Paring
     let approvalPromise = linkAndApprove['approval']();
     await cli.pair(linkAndApprove['deep_link']);    
@@ -92,6 +107,8 @@ test('pretend to be a dApp user also operating a CLI wallet', async () => {
     // Step 3- dApp Send message
     await app.dAppSendTestMessage();
     
+    // Step 4- clie Send message
+    await cli.SendTestMessage();
     
     //expect(cmdResult).toEqual(true);
     
