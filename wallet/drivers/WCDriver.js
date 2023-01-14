@@ -28,13 +28,21 @@ class WCDriver{
           },
         });
         
+        this.signClient.on("session_request", (event) => {
+          console.log ("SESSION REQUEST");
+          console.log(event);
+          this.signClient.respond({
+                                "topic": event.topic,
+                                "response":{"id":event.id,
+                                          "jsonrpc":"2.0",
+                                          "result":{'test_message':'hey from wallet'}}});
+        });
+        
+
+
         this.signClient.on("session_proposal", async (event) => {
           console.log("Session Event");
           console.log(inspect(event, { depth: null, colors: true }));
-          //if (approveNamespaces(event.params.requiredNamespaces) == false)
-          //  addAccountsToNamespaces
-          /// TODO -- Request the user to approve the session
-          console.log("Session Approving 1....");
           let apprv = {
             "id":event.id,
             "namespaces":{
@@ -53,13 +61,6 @@ class WCDriver{
           }
           console.log("Session Approving....");
           
-          /*
-          const { topic, acknowledged } = await signClient.approve(apprv)
-            console.log("Session Event Ack");
-            console.log(acknowledged);
-            console.log("Session Event Topic");
-            console.log(topic);
-        */
             let prms   =  this.signClient.approve(apprv).then(({topic, acknowledged})=>{
 
               console.log("Session Event Ack");
@@ -76,7 +77,6 @@ class WCDriver{
     //Second, to allow events from a device, you need to pair 
     async pair(auth_code)
     {
-      //let link = 'wc:758c5c02550bfe24d3fc4df42955a0678e7d5f981cd18e3424ff646a0f0635d0@2?relay-protocol=irn&symKey=ce7d0e81126bcf96b04a14ffe9e7b517cb29626af8d68a9514af92b748f3597a'
       let step1 = await this.signClient.core.pairing.pair({ uri: auth_code })
       console.log("Step 1")
       console.log(step1);
@@ -88,7 +88,6 @@ class WCDriver{
       const pairings = this.signClient.core.pairing.getPairings()
       console.log("List")
       console.log(pairings);
-  
 
     }
 

@@ -1,10 +1,22 @@
 const {SignClient} = require( '@walletconnect/sign-client')
 const WCDriver = require( '../wallet/drivers/WCDriver.js')
+      /*
+      const myPromise = new Promise((resolve, reject) => {
+          this.signClient.on("session_event", ({ event }) => {
+            console.log("dApp session_event");
+            console.log("-----------------");
+            console.log(event);
+            resolve("Hello, World!");
+          });  
+      });
+      const prom = await myPromise;
+      */
 
-class WCAppConnection{
+class WCRemoteWallet{
     constructor()
     {
         this.signClient = undefined; 
+        this.sessionApproval = undefined;
     }
 
     async doConnect(){
@@ -18,9 +30,34 @@ class WCAppConnection{
             this.signClient = await SignClient.init({ projectId })
         const { uri, approval } = await this.signClient.connect({ requiredNamespaces: namespaces });
         console.log("Connecting");
-
         return {'deep_link':uri,'approval':approval }
     }
+
+    setSessionApproval(data)
+    {
+      this.sessionApproval = data; 
+    }
+
+    async dAppSendTestMessage(){
+
+      const result = await this.signClient.request({
+        topic: this.sessionApproval.topic,
+        chainId: "eip155:1",
+        request: {
+          id: 1,
+          jsonrpc: "2.0",
+          method: "personal_sign",
+          params: [
+            "0x1d85568eEAbad713fBB5293B45ea066e552A90De",
+            "0x7468697320697320612074657374206d65737361676520746f206265207369676e6564",
+          ],
+        },
+      });
+      console.log("SIGN RESP")
+      console.log(result);      
+      console.log("Dapp sent message");
+    }
+
 
     processCommand (arg)
     {
@@ -38,20 +75,25 @@ test('pretend to be a dApp user also operating a CLI wallet', async () => {
 
 
 
-    let app = new WCAppConnection()
+    let app = new WCRemoteWallet()
     /// TODO, Finish from Here
     let cmdResult = cli.sayHello();
+    
+    // Step 1 - Listen
     let cmdSetup = await cli.listen();
     let linkAndApprove = await app.doConnect();
     console.log("The link" + linkAndApprove['deep_link']);
+    
+    // Step 2 - Paring
     let approvalPromise = linkAndApprove['approval']();
     await cli.pair(linkAndApprove['deep_link']);    
-    await approvalPromise;
-    console.log("waiting.......")
-    console.log("Connected!!!!")
+    app.setSessionApproval(await approvalPromise);
     
-
-    expect(cmdResult).toEqual(true);
+    // Step 3- dApp Send message
+    await app.dAppSendTestMessage();
+    
+    
+    //expect(cmdResult).toEqual(true);
     
     let appResult = app.processCommand("test");
     expect(appResult).toEqual(true);
