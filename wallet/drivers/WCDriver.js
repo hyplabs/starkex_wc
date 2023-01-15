@@ -10,11 +10,30 @@
 const { SignClient } = require( "@walletconnect/sign-client");
 const { Core } = require( "@walletconnect/core");
 const { inspect } = require( 'util') ;
+const ServiceManager = require('../services/ServiceManager.js');
+
+// TODO push to more general location
+const EthWalletGateway = require('../services/EthWalletGateway.js');
+
 class WCDriver{
+    
     constructor(){
         this.signClient = undefined;
         this.system_topics = {};
+        this.serviceManager = new ServiceManager();
+        this.serviceManager.registerService(new EthWalletGateway());  
+      
+        
     }
+
+    async queryForResponse(method,params,metadata){
+      console.log ("SESSION REQUEST (A.2)");
+      let resp = await this.serviceManager.run("eth_wallet_gateway", "admin", "generate_eth_account",{});
+      console.log(resp);
+      return resp
+    }
+
+
     // First you have to initialize, and set up lisenting for WC Events. None will come through, but get ready!
     async listen(){
       this.signClient = await SignClient.init({
@@ -29,14 +48,21 @@ class WCDriver{
           },
         });
         
-        this.signClient.on("session_request", (event) => {
-          console.log ("SESSION REQUEST");
+        this.signClient.on("session_request", async (event) => {
+          console.log ("SESSION REQUEST (X)");
           console.log(event);
+          let method = event['method'];
+          let params = event['params'];
+          let metadata = {};
+
+          console.log ("waiting...");
+          let resp = await this.queryForResponse(method,params,metadata);
+          console.log ("done...");
           this.signClient.respond({
                                 "topic": event.topic,
                                 "response":{"id":event.id,
                                           "jsonrpc":"2.0",
-                                          "result":{'test_message':'hey from wallet'}}});
+                                          "result":resp}});
         });
         
 
