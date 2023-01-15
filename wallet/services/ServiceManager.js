@@ -23,7 +23,9 @@ class ServiceManager {
      * @constructor
      */    
     constructor() {
-        this.services = {}
+        this.services = {};
+        this.pending_requests = {};
+        this.admin_handles = [];
     }
 
     /**
@@ -38,6 +40,16 @@ class ServiceManager {
         this.services[iServiceInstance.serviceName()] = iServiceInstance
         return true;
     }
+    
+    /**
+     * Returns the string "foo".
+     * @param {IService} the service instance to register
+     * @return {bool}
+     */    
+    registerAdminHandler(func)
+    {
+        this.admin_handles.push(func);
+    }
 
     /**
      * Returns the string "foo".
@@ -50,17 +62,57 @@ class ServiceManager {
 
 
     /**
-     * Emit an event to all event listeners
+     * Emit an admin event to all admin event listeners
      * @param {string} someParam
      * @return {string}
      */    
-    emit(iserviceName, event)
+    emit(event)
     {
-        console.log("EVENT "+ iserviceName);
-        console.log(event);
+        // This is not a production grade event system!!!
+        // This function could be expanded to route events intelligently, considering roles and functions. All we do now, is broadcast to any bound handle.
+        console.log("EMITTED EVENT!!! ");
+        console.log(JSON.stringify(event));
+        this.admin_handles.forEach((func)=>{
+            func(event);
+        })        
     }
     
-    
+    /**
+     * Request a user run a command for you, that you can not run
+     * @param {string} command a string command
+     * @param {string} role a string matching a supported role
+     * @param {Object} args in valid JSON/Object
+     * @return {Object}
+     */        
+    request(service,role,command,args){
+        let req = {}
+        let uid = Date.now().toString() + Math.floor(Math.random() * 100).toString();
+        req['id'] = uid;
+        req['service'] = service;
+        req['role'] = role;
+        req['command'] = command;
+        req['args'] = args;
+        req['promise_response'] = new Promise((resolve, reject) => {
+            let timeoutId = setTimeout(() => {
+                delete this.pending_requests[uid];
+                reject(new Error("Promise timed out after 2 minutes")); }, 120000);            
+            
+            req['func_reject'] = (val) => {
+                delete this.pending_requests[uid];
+                clearTimeout(timeoutId);
+                reject(val); };
+
+            req['func_resolve'] = (val) => {
+                delete this.pending_requests[uid];
+                clearTimeout(timeoutId);
+                resolve(val);};
+          });
+        console.log("SAVED REQUEST!!");
+        this.pending_requests[uid] = req;
+        this.emit(req); // emit an event, noting a request has arrived that needs attention
+        return req['promise_response'] // Return the promise for awaiting, so the requester can just hang off this.
+    }
+
     /**
      * Run a command, and return some result after.
      * @param {string} command a string command
@@ -69,6 +121,8 @@ class ServiceManager {
      * @return {Object}
      */        
     run(service,role,command,args){
+
+        
         if(!(Object.keys(this.services).includes(service)))
             return {"error":"Do not have a service '"+service+"' registered."}
         if(!(['admin','user'].includes(role)))
@@ -90,7 +144,8 @@ class ServiceManager {
         event['command'] = command;
         event['role'] = role;
         //event['example_metadata']= 'ran command';
-        this.emit(service, event); // emit an event, noting a function call
+        //this.emit(service, event); // emit an event, noting a function call
+        console.log("RUNNING THE FUNC");
         return func(args,event);
     }    
 }

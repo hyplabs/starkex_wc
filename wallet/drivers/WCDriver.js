@@ -17,20 +17,58 @@ const EthWalletGateway = require('../services/EthWalletGateway.js');
 
 class WCDriver{
     
-    constructor(){
+  testAdminResponder(event){
+    // TODO, will need to resolve requests here with the "answer"
+    /**
+    {
+      id: '167380080693177',
+      service: 'eth_wallet_gateway',
+      role: 'admin',
+      command: 'generate_eth_account',
+      args: {},
+      func_reject: [Function (anonymous)],
+      func_resolve: [Function (anonymous)],
+      promise_response: Promise { <pending> }
+    }
+     * 
+     */
+    console.log("GOT ADMIN REQUEST<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+    console.log(event);
+    console.log(event.service);
+    console.log(event.role);
+    console.log(event.command);
+    console.log(event.args);
+    console.log("GOT ADMIN REQUEST 2<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+    console.log(this.serviceManager);
+    console.log(this.serviceManager.run);
+    console.log("GOT ADMIN REQUEST 3<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+
+    let resp = this.serviceManager.run(
+            event.service, 
+            event.role, 
+            event.command,
+            event.args);
+    console.log("RESOLVING ADMIN REQUEST<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+    console.log(resp);
+        
+
+    event.func_resolve(resp);
+
+  }
+  async queryForResponse(method,params,metadata){
+    let resp = await this.serviceManager.request("eth_wallet_gateway", "admin", "generate_eth_account",{});
+    console.log ("SESSION REQUEST (A.2)");
+    console.log(resp);
+    return resp
+  }
+
+  constructor(){
         this.signClient = undefined;
         this.system_topics = {};
         this.serviceManager = new ServiceManager();
         this.serviceManager.registerService(new EthWalletGateway());  
-      
+        this.serviceManager.registerAdminHandler(this.testAdminResponder.bind(this));      
         
-    }
-
-    async queryForResponse(method,params,metadata){
-      console.log ("SESSION REQUEST (A.2)");
-      let resp = await this.serviceManager.run("eth_wallet_gateway", "admin", "generate_eth_account",{});
-      console.log(resp);
-      return resp
     }
 
 
