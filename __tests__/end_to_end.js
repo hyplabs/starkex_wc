@@ -1,5 +1,5 @@
 const {SignClient} = require( '@walletconnect/sign-client')
-const WCDriver = require( '../wallet/drivers/WCDriver.js')
+const Wallet = require( '../wallet/drivers/WCDriver.js')
       /*
       const myPromise = new Promise((resolve, reject) => {
           this.signClient.on("session_event", ({ event }) => {
@@ -45,7 +45,6 @@ class WCRemoteWallet{
                                         "result":{'test_message':'hey from APP'}}});
     
       });
-  
     }
 
     setSessionApproval(data)
@@ -85,41 +84,34 @@ class WCRemoteWallet{
 
 jest.setTimeout(30000);
 test('pretend to be a dApp user also operating a CLI wallet', async () => {
-    let cli = new WCDriver()
+    let cli = new Wallet();
     jest.setTimeout(30000);
-
-
 
     let app = new WCRemoteWallet()
     /// TODO, Finish from Here
-    let cmdResult = cli.sayHello();
+    let cmdResult = cli.wc_sayHello();
     
     // Step 1 - Listen
-    let cmdSetup = await cli.listen();
+    let cmdSetup = await cli.wc_listen();
     let linkAndApprove = await app.doConnect();
     console.log("The link" + linkAndApprove['deep_link']);
     await app.listen();    
     // Step 2 - Paring
     let approvalPromise = linkAndApprove['approval']();
-    await cli.pair(linkAndApprove['deep_link']);    
+    await cli.wc_pair(linkAndApprove['deep_link']);    
     app.setSessionApproval(await approvalPromise);
     
     // Step 3- dApp Send message
     await app.dAppSendTestMessage();
     
     // Step 4- clie Send message
-    await cli.SendTestMessage();
+    await cli.wc_SendTestMessage();
     
     //expect(cmdResult).toEqual(true);
     
     let appResult = app.processCommand("test");
     expect(appResult).toEqual(true);
-    // A
-    // 1) dApp inits connection
-    // 2) Wallet accepts
 
-    // 3) dApp sends a message for signing
-    // 4) Wallet accepts
     
     // 3) dApp sends a message for signing
     // 4) Wallet rejects
