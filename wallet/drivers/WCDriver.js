@@ -15,10 +15,16 @@ const ServiceManager = require('../services/ServiceManager.js');
 
 class WCDriver{
     
-  async queryForResponse(method,params,metadata){
-    let resp = await this.serviceManager.request("eth_wallet_gateway", "admin", "generate_eth_account",{});
-    console.log ("SESSION REQUEST (A.2)");
-    console.log(resp);
+  async queryForResponse(service,method,params,metadata){
+    //let resp = await this.serviceManager.request("eth_wallet_gateway", "admin", "generate_eth_account",{});
+    //console.log("queryForResponse---------------------------------");
+    //console.log(service);
+    //console.log(method);
+    //console.log(params);
+
+    let resp = await this.serviceManager.request(service, "admin", method,params);
+    //console.log ("SESSION REQUEST (A.2)");
+    //console.log(resp);
     return resp
   }
 
@@ -32,7 +38,6 @@ class WCDriver{
   async listen(){
     this.signClient = await SignClient.init({
         projectId: "b700887b888adad39517894fc9ab22e1",
-        //optional parameters
         relayUrl: "wss://relay.walletconnect.com",
         metadata: {
           name: "Wallet name",
@@ -43,15 +48,15 @@ class WCDriver{
       });
       
       this.signClient.on("session_request", async (event) => {
-        console.log ("SESSION REQUEST (X)");
-        console.log(event);
-        let method = event['method'];
-        let params = event['params'];
+        let method = event.params.request['method'];
+        let params = event.params.request['params'];
+        let service= event.params.request['service'];
+      
         let metadata = {};
 
-        console.log ("waiting...");
-        let resp = await this.queryForResponse(method,params,metadata);
-        console.log ("done...");
+        //console.log ("waiting...");
+        let resp = await this.queryForResponse(service,method,params,metadata);
+        //console.log ("done...");
         this.signClient.respond({
                               "topic": event.topic,
                               "response":{"id":event.id,
@@ -60,16 +65,104 @@ class WCDriver{
       });
       
 
-
       this.signClient.on("session_proposal", async (event) => {
-        console.log("Session Event");
-        console.log(inspect(event, { depth: null, colors: true }));
+        /**
+         * 
+        {
+              "id": 1674053961082583,
+              "params": {
+                "id": 1674053961082583,
+                "pairingTopic": "2540da25a70a3ace59c50f335d5e3ea53feecdbaacedbcda7a92531cd7280dad",
+                "expiry": 1674054262,
+                "requiredNamespaces": {
+                  "eip155": {
+                    "methods": [
+                      "personal_sign"
+                    ],
+                    "chains": [
+                      "eip155:1"
+                    ],
+                    "events": [
+                      "accountsChanged"
+                    ]
+                  }
+                },
+                "relays": [
+                  {
+                    "protocol": "irn"
+                  }
+                ],
+                "proposer": {
+                  "publicKey": "60d012e715e531c5bd15eee63074ead6a8dd1c0bf59e7bd0daeb8a30b4dccd12",
+                  "metadata": {
+                    "name": "",
+                    "description": "",
+                    "url": "",
+                    "icons": [
+                      ""
+                    ]
+                  }
+                }
+              }
+            }
+         */
+        //console.log("session_proposal EVENT>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+
+        //console.log(JSON.stringify(event, null, 2));
+
+        let genericParing = {} 
+
+        if (event.params == undefined || event.params.requiredNamespaces == undefined)
+        {
+          console.log("TODO, Handle rejection properly");
+          return;
+        }
+  
+        Object.keys(event.params.requiredNamespaces).forEach((nsid)=>{
+          genericParing[nsid] = {};
+          ['chains','events','methods'].forEach((spec)=>{
+              genericParing[nsid][spec] = event.params.requiredNamespaces[nsid][spec];
+          });
+        });
+        console.log("GENERIC PARING 1--------------------------------------------------------------");
+        console.log(genericParing);
+        let accounts = await this.queryForResponse("eth_wallet_gateway","system_approve_paired_accounts",genericParing,{});
+        console.log("GENERIC PARING 2--------------------------------------------------------------");
+        console.log(accounts);
+        //console.log(event.params.requiredNamespaces);
+        /// TODO -- This should validate only accounts on relevant chains. As a demo this is fine.
+        Object.keys(genericParing).forEach((nsid)=>{
+          console.log(nsid);          
+          event.params.requiredNamespaces[nsid].chains.forEach((chainid)=>{
+            console.log(chainid);          
+            genericParing[nsid]['accounts'] = [];
+            console.log("x");          
+            accounts.forEach((account)=>{
+              console.log(chainid+":"+account);          
+              console.log(chainid);          
+              console.log(account);          
+              genericParing[nsid]['accounts'].push (chainid+":"+account); 
+            });
+          });
+        });
+
+        console.log("GENERIC PARING 3--------------------------------------------------------------");
+        console.log(genericParing);
+
+        let apprv = {"id":event.id,"namespaces":genericParing}
+        let vals   =  await this.signClient.approve(apprv);
+        this.system_topics[vals.topic] =  event;
+            
+              
+        
+        /*
         let apprv = {
           "id":event.id,
           "namespaces":{
             "eip155":{
               "methods":["eth_sendTransaction",
                         "eth_signTransaction",
+                        "generate_eth_account",
                         "personal_sign",
                         "eth_signTypedData"],
               "accounts":["eip155:1:0xbe1E971E8e5E50F7698C74656520F0E788a0518D",
@@ -79,15 +172,7 @@ class WCDriver{
                 "accountsChanged"]
                     }
             }
-        }
-        console.log("Session Approving....");
-        let vals   =  await this.signClient.approve(apprv);
-        console.log("Session Event Ack");
-        console.log(vals.acknowledged);
-        console.log("Session Event Topic");
-        console.log(vals.topic);
-        this.system_topics[vals.topic] =  event;
-
+        } */       
       });          
   }
 
@@ -132,110 +217,10 @@ class WCDriver{
 
     }
 
-
-
     sayHello() {
         console.log("hello");
         return true;
     }
 }
 
-class CLIDriver{
-  constructor(sm)
-  {
-    this.serviceManager = sm;
-    this.serviceManager.registerAdminHandler(this.testAdminResponder.bind(this));          
-  }
-
-  testAdminResponder(event){
-    // TODO, will need to resolve requests here with the "answer"
-    /**
-    {
-      id: '167380080693177',
-      service: 'eth_wallet_gateway',
-      role: 'admin',
-      command: 'generate_eth_account',
-      args: {},
-      func_reject: [Function (anonymous)],
-      func_resolve: [Function (anonymous)],
-      promise_response: Promise { <pending> }
-    }
-     * 
-     */
-    console.log("GOT ADMIN REQUEST<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-    console.log(event);
-    console.log(event.service);
-    console.log(event.role);
-    console.log(event.command);
-    console.log(event.args);
-    console.log("GOT ADMIN REQUEST 2<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-    console.log(this.serviceManager);
-    console.log(this.serviceManager.run);
-    console.log("GOT ADMIN REQUEST 3<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-
-    let resp = this.serviceManager.run(
-            event.service, 
-            event.role, 
-            event.command,
-            event.args);
-    console.log("RESOLVING ADMIN REQUEST<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-    console.log(resp);
-    event.func_resolve(resp);
-  }
-
-}
-
-/**
- * Wallet (class)
- * A general example wallet that can be used to approve WalletConnect commands on your local CLI
- * The Wallet implements the Facade pattern, and is internally decoposed as follows:
- * - Wallet (<Composition> of Drivers)
- * --- Driver: CLI - work with admin user
- * --- Driver: WC - work with wallet connect (dApp) user
- *
- * - Service Manager (<Facade> to Services) - Route requests from Drivers to Services
- * --- Service: IService - Generic and empty service
- * --- Service: EthWalletGateway - Create an ETH user
- * 
- */
-// TODO push to more general location
-
-class Wallet{
-  constructor(){
-    this.interfaces = {}
-    const EthWalletGateway = require('../services/EthWalletGateway.js');
-    this.serviceManager = new ServiceManager();
-    this.serviceManager.registerService(new EthWalletGateway());
-    this.interfaces['cli'] = new CLIDriver(this.serviceManager);
-    this.interfaces['wc'] = new WCDriver(this.serviceManager);
-    this.system_topics = {};
-
-    this.doMethodBinding("cli",this.interfaces['cli']);
-    this.doMethodBinding("wc",this.interfaces['wc']);
-  }
-
-  /**
-   *  doMethodBinding
-   *  Unrap the component instance and place methods into the parent class dynamically
-   */
-  doMethodBinding(prefix,sourceInstance){
-    let prototype = Object.getPrototypeOf(sourceInstance);
-    let methods = Object.getOwnPropertyNames(prototype);
-    methods.forEach(method => {
-        if(typeof prototype[method] === "function" && method != "constructor" ){
-           //console.log(prefix+"_"+method + " bound");
-            Object.defineProperty(Wallet.prototype, prefix+"_"+method, {
-                get: function() {
-                    return prototype[method].bind(sourceInstance);
-                }
-            });
-        }
-    });
-
-  }
-  
-}
-
-
-
-module.exports = Wallet;
+module.exports = WCDriver;
