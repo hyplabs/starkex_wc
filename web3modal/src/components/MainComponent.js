@@ -1,18 +1,40 @@
 import { SignClient } from '@walletconnect/sign-client'
 import { Web3Modal } from '@web3modal/standalone'
+import WCApp from  './WCApp.js'
 
+/*
+
+  let app = new WCApp();   
+  let linkAndApprove = await app.doConnect(namespaces,projectId);
+  //console.log("The link" + linkAndApprove['deep_link']);
+  let appConnectPromise = app.listen();   
+
+  // Step 2 - APP Connect [  ]
+  await admin.wc_listen(); // CLI starts to listen
+  await appConnectPromise; // APP is starting to listen
+  await admin.wc_pair(linkAndApprove.deep_link); // Wallet looks for pairing at relay
+  await linkAndApprove.approval; // approval comes back
+  
+  let newAccnt = await app.request("generate_eth_account","eth_wallet_gateway",{});
+  console.log(newAccnt);
+  //// Step 4- Wallet Send message [   ]
+  //await admin.wc_SendTestMessage();
+  
+*/
 function MainComponent() {
   const projectId = 'b700887b888adad39517894fc9ab22e1'
   const namespaces = {
-    eip155: { methods: ['personal_sign'], 
+    eip155: { methods: ['personal_sign','generate_eth_account'], 
               chains: ['eip155:1'], 
               events: ['accountsChanged'] }
   }
   const web3Modal = new Web3Modal({ projectId, standaloneChains: namespaces.eip155.chains })
-  let sessionApproval = undefined;
-  let signClient = undefined;
+  //let sessionApproval = undefined;
+  //let signClient = undefined;
+  let app = new WCApp();   
 
   async function testSignPersonalMessage(){
+    /*
     const result = await signClient.request({
       topic: sessionApproval.topic,
       chainId: "eip155:1",
@@ -27,72 +49,35 @@ function MainComponent() {
       },
     });
     console.log("SIGN RESP")
-    console.log(result);
+    console.log(result);*/
+    alert(2);
   }
 
   let doConnect = async () =>{
     try {
       if (signClient) {
-        const { uri, approval } = await signClient.connect({ requiredNamespaces: namespaces })
+        //const { uri, approval } = await signClient.connect({ requiredNamespaces: namespaces })
+        const { deep_link, approval } = await app.doConnect(namespaces,projectId);
+        //let appConnectPromise = app.listen();   
+        let uri = deep_link;
+
         if (uri) {
           web3Modal.openModal({ uri })
           let res = await approval()
-          console.log("Connected")
+          console.log("Connected");
           console.log(res)
           web3Modal.closeModal()
           sessionApproval = res;
-          handleWalletEvents(signClient);
+          //handleWalletEvents(signClient);
         }
       }
-      else
-      {
-        signClient = await SignClient.init({ projectId })
-        alert("Init Done");
-      }
+
     } catch (err) {
       console.error(err)
     }
 
   }
 
-function handleWalletEvents(signClient){
-
-  signClient.on("session_event", ({ event }) => {
-    console.log("session_event");
-    console.log("-----------------");
-    console.log(event);
-    
-    // Handle session events, such as "chainChanged", "accountsChanged", etc.
-  });
-  signClient.on("session_request", (event) => {
-    console.log ("SESSION REQUEST");
-    console.log(event);
-    this.signClient.respond({
-                          "topic": event.topic,
-                          "response":{"id":event.id,
-                                    "jsonrpc":"2.0",
-                                    "result":{'test_message':'hey from wallet'}}});
-
-  });
-    
-  signClient.on("session_update", ({ topic, params }) => {
-      const { namespaces } = params;
-      const _session = signClient.session.get(topic);
-      // Overwrite the `namespaces` of the existing session with the incoming one.
-      const updatedSession = { ..._session, namespaces };
-      // Integrate the updated session state into your dapp state.
-      //onSessionUpdate(updatedSession);
-      console.log("session_update");
-      console.log("-----------------");
-      console.log(updatedSession);
-    });
-  
-  signClient.on("session_delete", () => {
-    // Session was deleted -> reset the dapp state, clean up from user session, etc.
-    console.log("session_delete !");
-    console.log("-----------------");
-});
-}
 
 
 

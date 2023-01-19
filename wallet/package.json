@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "the wallet server for WalletConnect",
   "main": "index.js",
-  "type": "module",
+
   "scripts": {
     "test": "npx jest browser_tests.js"
   },

@@ -124,30 +124,18 @@ class WCDriver{
               genericParing[nsid][spec] = event.params.requiredNamespaces[nsid][spec];
           });
         });
-        console.log("GENERIC PARING 1--------------------------------------------------------------");
-        console.log(genericParing);
         let accounts = await this.queryForResponse("eth_wallet_gateway","system_approve_paired_accounts",genericParing,{});
-        console.log("GENERIC PARING 2--------------------------------------------------------------");
-        console.log(accounts);
-        //console.log(event.params.requiredNamespaces);
+        
         /// TODO -- This should validate only accounts on relevant chains. As a demo this is fine.
         Object.keys(genericParing).forEach((nsid)=>{
-          console.log(nsid);          
           event.params.requiredNamespaces[nsid].chains.forEach((chainid)=>{
-            console.log(chainid);          
             genericParing[nsid]['accounts'] = [];
-            console.log("x");          
             accounts.forEach((account)=>{
-              console.log(chainid+":"+account);          
-              console.log(chainid);          
-              console.log(account);          
               genericParing[nsid]['accounts'].push (chainid+":"+account); 
             });
           });
         });
 
-        console.log("GENERIC PARING 3--------------------------------------------------------------");
-        console.log(genericParing);
 
         let apprv = {"id":event.id,"namespaces":genericParing}
         let vals   =  await this.signClient.approve(apprv);
