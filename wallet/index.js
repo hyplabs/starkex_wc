@@ -42,3 +42,4 @@ rl.on('line', async (input) => {
 });
 rl.prompt();
 main();
+//rm -rf node_modules/.cache/

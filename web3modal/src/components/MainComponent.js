@@ -1,6 +1,6 @@
 import { SignClient } from '@walletconnect/sign-client'
 import { Web3Modal } from '@web3modal/standalone'
-import WCApp from  './WCApp.js'
+const WCApp = require(  './WCApp.js');
 
 /*
 
@@ -55,21 +55,21 @@ function MainComponent() {
 
   let doConnect = async () =>{
     try {
-      if (signClient) {
-        //const { uri, approval } = await signClient.connect({ requiredNamespaces: namespaces })
-        const { deep_link, approval } = await app.doConnect(namespaces,projectId);
-        //let appConnectPromise = app.listen();   
-        let uri = deep_link;
+      
+      //const { uri, approval } = await signClient.connect({ requiredNamespaces: namespaces })
+      const { deep_link, approval } = await app.doConnect(namespaces,projectId);
+      //let appConnectPromise = app.listen();   
+      let uri = deep_link;
 
-        if (uri) {
-          web3Modal.openModal({ uri })
-          let res = await approval()
-          console.log("Connected");
-          console.log(res)
-          web3Modal.closeModal()
-          sessionApproval = res;
-          //handleWalletEvents(signClient);
-        }
+      if (uri) {
+        web3Modal.openModal({ uri })
+        let res = await approval; // WHAT
+        console.log("Connected 2");
+        console.log(res)
+        web3Modal.closeModal()
+        let sessionApproval = res;
+        //handleWalletEvents(signClient);
+        
       }
 
     } catch (err) {
