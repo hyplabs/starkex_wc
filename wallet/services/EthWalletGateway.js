@@ -4,13 +4,6 @@ const crypto = require('crypto');
 const BIP39 = require('bip39');
 const ethUtil = require('ethereumjs-util');
 
-//const hdkey = require('hdkey');
-//const EC = require('elliptic').ec;
-//const util = require('util');
-//function sha256(string) {
-//  return crypto.createHash('sha256').update(string).digest('hex');
-//}
-
 /**
  * EthWalletGateway: IService
  * An example implementation of a wallet + gateway combination. Partial implementation meant to be instuctive in nature.
@@ -88,63 +81,50 @@ class EthWalletGateway /* implements IService */ {
         accountData.publicKey= publicKey.toString('hex');
         return accountData
     }  
-} 
-module.exports = EthWalletGateway;
 
-/*
-class EthWalletGateway {
-    constructor() {
-    }
-    setWallet(privateKey,network,projectId){
-        this.provider = provider;
-        let provider = new ethers.providers.InfuraProvider(network,projectId);
-        this.wallet = new ethers.Wallet(privateKey,provider);
-    }
-
-    async createNewKeyPair() {
-        const wallet = ethers.Wallet.createRandom();
-        return {
-            publicKey: wallet.address,
-            privateKey: wallet.privateKey
+    async signTransaction(args,metadata) {
+        // metadata -- unused
+        let privateKey = args["privateKey"];
+        let to = args["to"];
+        let value = args["value"];
+        let gasPrice = args["gasPrice"];
+        let gasLimit = args["gasLimit"];
+        let nonce = args["nonce"];
+        let chainId = args["chainId"];
+        let data = args["data"];
+    
+        let wallet = new ethers.Wallet(privateKey);
+        let rawTransaction = {
+            nonce: ethers.utils.bigNumberify(nonce),
+            gasPrice: ethers.utils.bigNumberify(gasPrice),
+            gasLimit: ethers.utils.bigNumberify(gasLimit),
+            to: to,
+            value: ethers.utils.bigNumberify(value),
+            data: data,
+            chainId: ethers.utils.bigNumberify(chainId)
         };
-    }
-
-    async signTransaction(transaction) {
-        const signedTransaction = await this.wallet.sign(transaction);
+        let signedTransaction = await wallet.sign(rawTransaction);
         return signedTransaction;
     }
-
-    async sendTransaction(signedTransaction) {
-        const transaction = await this.provider.sendTransaction(signedTransaction);
-        return transaction.hash;
-    }
-
-    async getTransaction(transactionHash) {
-        const transaction = await this.provider.getTransaction(transactionHash);
-        return transaction;
-    }
-
-    async handle(params) {
-        if (!params.functionName) {
-            throw new Error('params.functionName must be provided');
-        }
-
-        switch (params.functionName) {
-            case 'getBalance':
-                return await this.getBalance(params.address);
-            case 'getTransactionReceipt':
-                return await this.getTransactionReceipt(params.transactionHash);
-            case 'deployContract':
-                return await this.deployContract(params.contractBytecode, params.args);
-            case 'callContract':
-                return await this.callContract(params.contractAddress, params.contractABI, params.functionName, params.args);
-            case 'estimateGas':
-                return await this.estimateGas(params.transaction);
-            // ... more cases for other functions here ...
-            default:
-                throw new Error(`Unrecognized functionName: ${params.functionName}`);
-        }
+    async sendSignedTransaction(args,metadata) {
+        // metadata -- unused
+        let signedTransaction = args["signedTransaction"];
+    
+        let provider = new ethers.providers.JsonRpcProvider();
+        let transaction = await provider.sendTransaction(signedTransaction);
+        let transactionId = transaction.hash;
+        return transactionId;
     }
     
-}
-*/
+    async getTransactionStatus(args,metadata) {
+        // metadata -- unused
+        let transactionId = args["transactionId"];
+    
+        let provider = new ethers.providers.JsonRpcProvider();
+        let transaction = await provider.getTransaction(transactionId);
+        let status = transaction.blockNumber != null ? "confirmed" : "pending";
+        return status;
+    }
+
+} 
+module.exports = EthWalletGateway;
