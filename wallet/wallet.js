@@ -1,4 +1,3 @@
-
 /**
  * Wallet (class)
  * A general example wallet that can be used to approve WalletConnect commands on your local CLI
@@ -15,7 +14,7 @@
 // TODO push to more general location
 
 class Wallet{
-  constructor(){
+  constructor(approvalMethod){
     this.interfaces = {}
     const ServiceManager = require('./services/ServiceManager.js');
     const EthWalletGateway = require('./services/EthWalletGateway.js');
@@ -24,12 +23,14 @@ class Wallet{
     this.system_topics = {};
 
     const CLIDriver = require('./drivers/CLIDriver.js');
-    this.interfaces['cli'] = new CLIDriver(this.serviceManager);
+    this.interfaces['cli'] = new CLIDriver(this.serviceManager,approvalMethod);
     this.doMethodBinding("cli",this.interfaces['cli']);
     
     const WCDriver = require('./drivers/WCDriver.js');
     this.interfaces['wc'] = new WCDriver(this.serviceManager);
     this.doMethodBinding("wc",this.interfaces['wc']);
+  
+
   }
 
   /**

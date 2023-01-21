@@ -52,7 +52,7 @@ function MainComponent() {
     console.log(result);*/
     alert(2);
   }
-
+ 
   let doConnect = async () =>{
     try {
       

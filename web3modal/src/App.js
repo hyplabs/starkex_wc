@@ -15,7 +15,7 @@ class App extends Component {
     super(props);  
     this.projectId = 'b700887b888adad39517894fc9ab22e1'
     this.namespaces = {
-      eip155: { methods: ['personal_sign','generate_eth_account'], 
+      eip155: { methods: ['personal_sign','generate_eth_account','system_get_account_data'], 
                 chains: ['eip155:1'], 
                 events: ['accountsChanged'] }
     }
@@ -25,11 +25,9 @@ class App extends Component {
     this.app = new WCApp();   
   
   }
-  
-  
+     
   handleConnect = async () => {
-      try {
-        
+      try {        
         //const { uri, approval } = await signClient.connect({ requiredNamespaces: namespaces })
         const { deep_link, approval } = await this.app.doConnect(this.namespaces,this.projectId);
         //let appConnectPromise = app.listen();   
@@ -42,24 +40,25 @@ class App extends Component {
           console.log(res)
           this.web3Modal.closeModal()
           let sessionApproval = res;
-          //handleWalletEvents(signClient);
-          
         }
-
       } catch (err) {
         console.error(err)
       }
-
-    
-
   }
 
-  handleGenerateAccount = () => {
-    // JavaScript handler for the "Generate Account" button
+    /**
+     * With admin approval, lets actually expose keys. The Wallet will have to voluntairly send this data over.
+     * (Go ahead and try to say Y and then N to this request)
+     */
+  handleGenerateAccount = async () => {
+    let accountResponse = await this.app.request("generate_eth_account","eth_wallet_gateway",{});
+    alert(JSON.stringify(accountResponse));
   }
 
-  handleGetAccountData = () => {
-    // JavaScript handler for the "Get Account Data" button
+  handleGetAccountData = async () => {
+    alert("?")
+    let accountResponse = await this.app.request("system_get_account_data","eth_wallet_gateway",{});
+    alert(JSON.stringify(accountResponse));
   }
 
   handleSignTransaction = () => {

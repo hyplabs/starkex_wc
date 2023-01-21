@@ -16,7 +16,7 @@
  *  --- commands - Each Service has a list of commands, which are simply functions which take a JSON object as an argument.
  *  - roles - There are two roles. User, and Admin. In IServices, each command is required to be configured for a User or Admin.
  * ----Typically a local wallet CLI will be granted Admin access, whereas a dApp will be granted User access. In general Users can not see private keys, or inspect other secret data. 
- */
+ */ 
 class ServiceManager {
     /**
      * Create a new ServiceManager instance.
@@ -122,7 +122,6 @@ class ServiceManager {
      */        
     run(service,role,command,args){
 
-        
         if(!(Object.keys(this.services).includes(service)))
             return {"error":"Do not have a service '"+service+"' registered."}
         if(!(['admin','user'].includes(role)))
@@ -145,7 +144,6 @@ class ServiceManager {
         event['role'] = role;
         //event['example_metadata']= 'ran command';
         //this.emit(service, event); // emit an event, noting a function call
-        console.log("RUNNING THE FUNC");
         return func(args,event);
     }    
 }

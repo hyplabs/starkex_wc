@@ -52,6 +52,6 @@ class WCApp{
 
 
 
-}
+} 
 
 module.exports = WCApp;

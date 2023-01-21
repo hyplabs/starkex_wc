@@ -1,26 +1,16 @@
 class UnitTestCLIDriver{
-    constructor(sm)
+    constructor(sm,responder)
     {
       this.serviceManager = sm;
-      this.serviceManager.registerAdminHandler(this.testAdminResponder.bind(this));          
+      if (responder==undefined)
+        this.serviceManager.registerAdminHandler(this.testAdminResponder.bind(this));          
+      else      
+        this.serviceManager.registerAdminHandler(responder.bind(this));          
     }
-  
+
     testAdminResponder(event){
-      /**{
-        id: '167380080693177',
-        service: 'eth_wallet_gateway',
-        role: 'admin',
-        command: 'generate_eth_account',
-        args: {},
-        func_reject: [Function (anonymous)],
-        func_resolve: [Function (anonymous)],
-        promise_response: Promise { <pending> }
-      } */
-      // console.log("Test CLI Auto Approving:-------------------------------");
-      // console.log(event);
       if (event.command == "system_approve_paired_accounts")
       {
-        // TODO -- aval the account, and choose the account we wish to select
         event.func_resolve(["0xbe1E971E8e5E50F7698C74656520F0E788a0518D",
                             "0x3c582121909DE92Dc89A36898633C1aE4790382b"]);
         return;
@@ -32,8 +22,6 @@ class UnitTestCLIDriver{
               event.role, 
               event.command,
               event.args);
-      //console.log("RESOLVING ADMIN REQUEST<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-      //console.log(resp);
       event.func_resolve(resp);
     }
   
