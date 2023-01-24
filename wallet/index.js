@@ -57,7 +57,6 @@ async function adminRequest(event){
 }
 
 async function adminRespond(event){
-  console.log("IN adminRespond -----------");
   if (event.command == "system_approve_paired_accounts")
   {
     event.func_resolve(["0x"+currentAccount['address']]);
@@ -80,10 +79,10 @@ async function adminRespond(event){
 
 let main = async () =>{
   let ethPrivateKey = undefined;
-  let rpcURL = undefined;
-  admin = new Wallet(adminRequest, // This is the handler that is involked when a new event is triggered by a dApp
-                    ethPrivateKey, // This is the ETH private key we will use internall to represent the sessioon
-                    rpcURL); // This is the RPC target for the Eth Node we wish to speak with
+  let ethProviderUrl = undefined;
+  admin = new Wallet({approvalMethod: adminRequest, // This is the handler that is involked when a new event is triggered by a dApp
+                    ethPrvateKey: ethPrivateKey, // This is the ETH private key we will use internall to represent the sessioon
+                    ethProviderUrl: ethProviderUrl}); // This is the RPC target for the Eth Node we wish to speak with
   await admin.wc_listen();   
   currentAccount = await admin.serviceManager.run("eth_wallet_gateway", "admin", "generate_eth_account", {});
   await admin.serviceManager.run("eth_wallet_gateway", 
@@ -102,4 +101,3 @@ let currentAccount = {};
 let approvals = [];
 
 main();
-// rm -rf node_modules/.cache/

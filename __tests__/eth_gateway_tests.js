@@ -39,8 +39,8 @@ test('Test ServiceManager registration with ethers.js long version', async () =>
                 events: ['accountsChanged'] }
     };
   
-  let admin = new Wallet({'ethPrivateKey':"0x8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f", // NOT A REAL KEY
-                          'ethProviderUrl':"https://goerli.infura.io/v3/37519f5fe2fb4d2cac2711a66aa06514"}); // JUSTIN'S INSTANCE
+  let admin = new Wallet({'ethPrivateKey':"0x8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f", // NOT A SECURE KEY
+                          'ethProviderUrl':undefined}); // JUSTIN'S INSTANCE
   let app = new WCApp(); 
   jest.setTimeout(30000);
     
@@ -66,6 +66,8 @@ test('Test ServiceManager registration with ethers.js long version', async () =>
   let gasPrice = "2000000000"; // 2 Gwei
   let gasLimit = "21000";
   let chainId = 5;
+  console.log("newAccnt.address");
+  console.log(newAccnt.address);
   args = {
       to: newAccnt.address,
       value: value,
@@ -79,6 +81,15 @@ test('Test ServiceManager registration with ethers.js long version', async () =>
   let signedTransaction = await app.request("signTransaction","eth_wallet_gateway",args);
   console.log(signedTransaction);
   expect(signedTransaction).toMatch(/^0x[A-Za-z0-9]{10,1000}$/);
+
+  await admin.serviceManager.run("eth_wallet_gateway", 
+                                  "admin", 
+                                  "set_admin_account", {"privateKey":"0x8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f",
+                                                        "providerUrl":"https://goerli.infura.io/v3/37519f5fe2fb4d2cac2711a66aa06514"});
+  signedTransaction = await app.request("signTransaction","eth_wallet_gateway",args);
+  console.log(signedTransaction);
+  expect(signedTransaction).toMatch(/^0x[A-Za-z0-9]{10,1000}$/);
+                                                      
 
 /* TODO, Add more ETHERS methods if we would like. They are prototyped already, just need a little extra love.
   console.log("Signed transaction:", signedTransaction);

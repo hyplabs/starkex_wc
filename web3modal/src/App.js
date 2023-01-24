@@ -15,7 +15,7 @@ class App extends Component {
     super(props);  
     this.projectId = 'b700887b888adad39517894fc9ab22e1'
     this.namespaces = {
-      eip155: { methods: ['personal_sign','generate_eth_account','system_get_account_data'], 
+      eip155: { methods: ['personal_sign','generate_eth_account','system_get_account_data','signTransaction'], 
                 chains: ['eip155:1'], 
                 events: ['accountsChanged'] }
     }
@@ -35,7 +35,7 @@ class App extends Component {
 
         if (uri) {
           this.web3Modal.openModal({ uri })
-          let res = await approval; // WHAT
+          let res = await approval; 
           console.log("Connected 2");
           console.log(res)
           this.web3Modal.closeModal()
@@ -56,17 +56,30 @@ class App extends Component {
   }
 
   handleGetAccountData = async () => {
-    alert("?")
     let accountResponse = await this.app.request("system_get_account_data","eth_wallet_gateway",{});
     alert(JSON.stringify(accountResponse));
   }
 
-  handleSignTransaction = () => {
-    // JavaScript handler for the "Sign Transaction" button
-  }
+  handleSignTransaction = async () => {
 
-  handleSendTransaction = () => {
-    // JavaScript handler for the "Send Transaction" button
+    let args = {};
+    let metadata = {};  
+    let value = "0.001"; // 0.001 Ether
+    let gasPrice = "2000000000"; // 2 Gwei
+    let gasLimit = "21000";
+    let chainId = 5;
+    args = {
+        to: "31349e0c9d36f3d11b980df145a1abc871399b8a",
+        value: value,
+        gasPrice: gasPrice,
+        gasLimit: gasLimit,
+        type:1,
+        chainId: chainId,
+    };
+    metadata = {};
+  
+    let signedTransaction = await this.app.request("signTransaction","eth_wallet_gateway",args);
+    alert(JSON.stringify(signedTransaction ));
   }
 
   render() {
@@ -116,13 +129,6 @@ class App extends Component {
                   <Form.Control type="button" value="Sign Transaction" onClick={this.handleSignTransaction} />
                   <Form.Text className="text-muted">
                       This button will sign the current transaction.
-                  </Form.Text>
-              </Form.Group>
-              <Form.Group>
-                  <Form.Label>Send Transaction</Form.Label>
-                  <Form.Control type="button" value="Send Transaction" onClick={this.handleSendTransaction} />
-                  <Form.Text className="text-muted">
-                      This button will send a dummy transaction.
                   </Form.Text>
               </Form.Group>
           </Form>
