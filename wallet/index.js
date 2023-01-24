@@ -79,9 +79,18 @@ async function adminRespond(event){
 
 
 let main = async () =>{
-  admin = new Wallet(adminRequest);
+  let ethPrivateKey = undefined;
+  let rpcURL = undefined;
+  admin = new Wallet(adminRequest, // This is the handler that is involked when a new event is triggered by a dApp
+                    ethPrivateKey, // This is the ETH private key we will use internall to represent the sessioon
+                    rpcURL); // This is the RPC target for the Eth Node we wish to speak with
   await admin.wc_listen();   
   currentAccount = await admin.serviceManager.run("eth_wallet_gateway", "admin", "generate_eth_account", {});
+  await admin.serviceManager.run("eth_wallet_gateway", 
+                                  "admin", 
+                                  "set_admin_account", {"privateKey":currentAccount.privateKey,
+                                                        "providerUrl":undefined});
+  
   console.log(JSON.stringify(currentAccount));
   console.log("begin by writing 'auth PASTE_YOUR_DEEP_LINK'");   
   console.log("After session_approval, you may see requests for review. With these requests you can respond with 'approve' and 'reject'.");   

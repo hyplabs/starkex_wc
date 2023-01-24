@@ -39,8 +39,8 @@ test('Test ServiceManager registration with ethers.js long version', async () =>
                 events: ['accountsChanged'] }
     };
   
-  let admin = new Wallet({'ethPrivateKey':"0xa881e3de2f71ddfcd7d5c189c4755b6033328d48e9895d47ea4de00603d6732c",
-                          'ethProviderUrl':"https://goerli.infura.io/v3/37519f5fe2fb4d2cac2711a66aa06514"});
+  let admin = new Wallet({'ethPrivateKey':"0x8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f", // NOT A REAL KEY
+                          'ethProviderUrl':"https://goerli.infura.io/v3/37519f5fe2fb4d2cac2711a66aa06514"}); // JUSTIN'S INSTANCE
   let app = new WCApp(); 
   jest.setTimeout(30000);
     
@@ -66,25 +66,21 @@ test('Test ServiceManager registration with ethers.js long version', async () =>
   let gasPrice = "2000000000"; // 2 Gwei
   let gasLimit = "21000";
   let chainId = 5;
-  
   args = {
       to: newAccnt.address,
       value: value,
       gasPrice: gasPrice,
       gasLimit: gasLimit,
-      nonce: nonce,
       type:1,
       chainId: chainId,
   };
   metadata = {};
 
-  console.log("preparedTransaction");
-  console.log(args);
   let signedTransaction = await app.request("signTransaction","eth_wallet_gateway",args);
-  console.log("signedTransaction");
   console.log(signedTransaction);
+  expect(signedTransaction).toMatch(/^0x[A-Za-z0-9]{10,1000}$/);
 
-/*
+/* TODO, Add more ETHERS methods if we would like. They are prototyped already, just need a little extra love.
   console.log("Signed transaction:", signedTransaction);
   
   let args = {signedTransaction: signedTransaction};

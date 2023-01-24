@@ -18,9 +18,10 @@ class EthWalletGateway /* implements IService */ {
     constructor(serviceManager,privateKey,providerUrl) {
         this.setting = {}
         this.setting.privateKey = privateKey;
-        this.setting.privateKey = providerUrl;
+        this.setting.providerUrl = providerUrl;
         this.serviceManager = serviceManager;
     }
+    
     /**
      * The name of the current Service
      * @return {string}
@@ -51,16 +52,19 @@ class EthWalletGateway /* implements IService */ {
             "admin": {"generate_eth_account":this.generate_eth_account.bind(this),
                         "derive_account_from_private_key":this.derive_account_from_private_key.bind(this),
                         "signTransaction":this.signTransaction.bind(this),
-                        "sendSignedTransaction":this.sendSignedTransaction.bind(this),
-                        "getTransactionStatus":this.getTransactionStatus.bind(this)
+                        "set_admin_account":this.set_admin_account.bind(this),
+                        //TODO "sendSignedTransaction":this.sendSignedTransaction.bind(this),
+                        //TODO "getTransactionStatus":this.getTransactionStatus.bind(this)
                      },
             "user" : {}
         };
     }  
     
+    /**
+     * Generate a new ETH account
+     * @return {Object}
+     */        
     async generate_eth_account(args,metadata) {
-        // args -- unused
-        // metadata -- unused
         const mnemonic = BIP39.generateMnemonic();
         let buf = await BIP39.mnemonicToSeed(mnemonic);    
         const privateKey = ethUtil.keccak(buf);
@@ -75,6 +79,12 @@ class EthWalletGateway /* implements IService */ {
             privateKey:privateKey.toString('hex')}
     }
       
+    /**
+     * Given a private key, derive other account details
+     * @param {String} args.privateKey The private key
+     * @param {Object} metadata associated with your command (command, service, role). This makes it possible to constrain user types that can use this command.
+     * @return {Object}
+     */        
     derive_account_from_private_key(args,metadata){
         // metadata -- unused        
         let private_key_hex = args["privateKey"];
@@ -89,21 +99,46 @@ class EthWalletGateway /* implements IService */ {
         return accountData
     }  
 
-    async signTransaction(args,metadata) {
+    /**
+     * Given a private key, derive other account details
+     * @param {String} args.privateKey The private key
+     * @param {String} args.providerUrl The URL of the Eth RPC proovider
+     * @param {Object} metadata associated with your command (command, service, role). This makes it possible to constrain user types that can use this command.
+     * @return {Object}
+     */        
+    async set_admin_account(args,metadata) {
+        this.setting.privateKey = args.privateKey;
+        this.setting.providerUrl = args.providerUrl;
+        return true
+    }
 
-        if (chainId != 5)
+    /**
+     * Given a private key, derive other account details
+     * @param {Object} args A valid ETH transacton
+     * @param {Object} metadata associated with your command (command, service, role). This makes it possible to constrain user types that can use this command.
+     * @return {Object}
+     */        
+    async signTransaction(args,metadata) {
+        if (args['chainId'] != 5)
             return {"error":"Only goerli is supported"} 
         if (args.privateKey == undefined && this.setting.privateKey == undefined )
             return {"error":"Require a eth privateKey argument"}
-        const provider = new ethers.providers.JsonRpcProvider(self.setting.providerUrl);        
         let wallet = undefined;
         if (args.privateKey == undefined)
+        {    
             wallet = new ethers.Wallet(this.setting.privateKey);
+        }
         else
+        {
             wallet = new ethers.Wallet(args.privateKey);
-
-        let nonce = await provider.getTransactionCount(wallet.address);
-
+        }
+        
+        let nonce = "12345";
+        if (this.setting.providerUrl != undefined)
+        {
+            const provider = new ethers.providers.JsonRpcProvider(this.setting.providerUrl);        
+            let nonce = await provider.getTransactionCount(wallet.address);
+        }
         const transaction = {
             to: args['to'],
             value: ethers.utils.parseEther(args['value']),
@@ -118,7 +153,12 @@ class EthWalletGateway /* implements IService */ {
         const rawTransaction = await wallet.signTransaction(transaction);    
         return rawTransaction;
     }
+    /*
 
+
+    TODO 
+    - Finish these off to enjoy a team victory lap
+    - Having a full end to end L1 + L2 solution is
     async sendSignedTransaction(args,metadata) {
         // metadata -- unused
         let signedTransaction = args["signedTransaction"];
@@ -138,6 +178,8 @@ class EthWalletGateway /* implements IService */ {
         let status = transaction.blockNumber != null ? "confirmed" : "pending";
         return status;
     }
+
+    */
 
 } 
 module.exports = EthWalletGateway;
