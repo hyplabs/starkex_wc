@@ -1,7 +1,7 @@
 const Wallet = require( '../wallet/wallet.js')
 const WCApp = require( '../web3modal/src/components/WCApp.js')
 
-jest.setTimeout(30000);
+jest.setTimeout(10000);
 test('Simulate a dApp connecting to a CLI wallet', async () => {
   const projectId = 'b700887b888adad39517894fc9ab22e1';
   const namespaces = {
@@ -12,12 +12,12 @@ test('Simulate a dApp connecting to a CLI wallet', async () => {
 
   let admin = new Wallet();
   let app = new WCApp(); 
-  jest.setTimeout(30000);
+  jest.setTimeout(10000);
     
   // Step 1 - App Propse + Get deep link [  ]
   let linkAndApprove = await app.doConnect(namespaces,projectId);
   //console.log("The link" + linkAndApprove['deep_link']);
-  let appConnectPromise = app.listen();   
+  let appConnectPromise = app.listen();    
 
   // Step 2 - APP Connect [  ]
   await admin.wc_listen(); // CLI starts to listen

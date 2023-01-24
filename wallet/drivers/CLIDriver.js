@@ -3,9 +3,15 @@ class UnitTestCLIDriver{
     {
       this.serviceManager = sm;
       if (responder==undefined)
+      {
+        console.log("ASSIGNING DEFAULT HANDLER");
         this.serviceManager.registerAdminHandler(this.testAdminResponder.bind(this));          
-      else      
+      }
+      else
+      {      
+        console.log("CUSTOM HANDLER");
         this.serviceManager.registerAdminHandler(responder.bind(this));          
+      }
     }
 
     testAdminResponder(event){
@@ -16,7 +22,6 @@ class UnitTestCLIDriver{
         return;
       }
 
-
       let resp = this.serviceManager.run(
               event.service, 
               event.role, 
@@ -24,7 +29,7 @@ class UnitTestCLIDriver{
               event.args);
       event.func_resolve(resp);
     }
-  
+
   }
   module.exports = UnitTestCLIDriver;
   module.exports.UnitTestCLIDriver = UnitTestCLIDriver;

@@ -14,16 +14,18 @@
 // TODO push to more general location
 
 class Wallet{
-  constructor(approvalMethod){
+  constructor(settings){
     this.interfaces = {}
     const ServiceManager = require('./services/ServiceManager.js');
     const EthWalletGateway = require('./services/EthWalletGateway.js');
     this.serviceManager = new ServiceManager();
-    this.serviceManager.registerService(new EthWalletGateway());
+    this.serviceManager.registerService(new EthWalletGateway(this.serviceManager,
+                                                            settings.ethPrivateKey,
+                                                            settings.ethProviderUrl));
     this.system_topics = {};
 
     const CLIDriver = require('./drivers/CLIDriver.js');
-    this.interfaces['cli'] = new CLIDriver(this.serviceManager,approvalMethod);
+    this.interfaces['cli'] = new CLIDriver(this.serviceManager,settings.approvalMethod);
     this.doMethodBinding("cli",this.interfaces['cli']);
     
     const WCDriver = require('./drivers/WCDriver.js');

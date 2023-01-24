@@ -3,13 +3,7 @@ const {IService} = require('./ServiceManager.js');
 const crypto = require('crypto');
 const BIP39 = require('bip39');
 const ethUtil = require('ethereumjs-util');
-
-//const hdkey = require('hdkey');
-//const EC = require('elliptic').ec;
-//const util = require('util');
-//function sha256(string) {
-//  return crypto.createHash('sha256').update(string).digest('hex');
-//}
+const { BigNumber } = require('ethers');
 
 /**
  * EthWalletGateway: IService
@@ -21,16 +15,20 @@ class EthWalletGateway /* implements IService */ {
      * @param {Object} serviceManager our Service Manager
      * @constructor
      */    
-    constructor(serviceManager) {
+    constructor(serviceManager,privateKey,providerUrl) {
+        this.setting = {}
+        this.setting.privateKey = privateKey;
+        this.setting.providerUrl = providerUrl;
         this.serviceManager = serviceManager;
     }
+    
     /**
      * The name of the current Service
      * @return {string}
      */        
     serviceName(){
         return "eth_wallet_gateway"
-    }
+    } 
 
     /**
      * Run a command, and return some result after.
@@ -53,14 +51,20 @@ class EthWalletGateway /* implements IService */ {
         return {
             "admin": {"generate_eth_account":this.generate_eth_account.bind(this),
                         "derive_account_from_private_key":this.derive_account_from_private_key.bind(this),
+                        "signTransaction":this.signTransaction.bind(this),
+                        "set_admin_account":this.set_admin_account.bind(this),
+                        //TODO "sendSignedTransaction":this.sendSignedTransaction.bind(this),
+                        //TODO "getTransactionStatus":this.getTransactionStatus.bind(this)
                      },
             "user" : {}
         };
     }  
     
+    /**
+     * Generate a new ETH account
+     * @return {Object}
+     */        
     async generate_eth_account(args,metadata) {
-        // args -- unused
-        // metadata -- unused
         const mnemonic = BIP39.generateMnemonic();
         let buf = await BIP39.mnemonicToSeed(mnemonic);    
         const privateKey = ethUtil.keccak(buf);
@@ -75,6 +79,12 @@ class EthWalletGateway /* implements IService */ {
             privateKey:privateKey.toString('hex')}
     }
       
+    /**
+     * Given a private key, derive other account details
+     * @param {String} args.privateKey The private key
+     * @param {Object} metadata associated with your command (command, service, role). This makes it possible to constrain user types that can use this command.
+     * @return {Object}
+     */        
     derive_account_from_private_key(args,metadata){
         // metadata -- unused        
         let private_key_hex = args["privateKey"];
@@ -88,63 +98,88 @@ class EthWalletGateway /* implements IService */ {
         accountData.publicKey= publicKey.toString('hex');
         return accountData
     }  
-} 
-module.exports = EthWalletGateway;
 
-/*
-class EthWalletGateway {
-    constructor() {
-    }
-    setWallet(privateKey,network,projectId){
-        this.provider = provider;
-        let provider = new ethers.providers.InfuraProvider(network,projectId);
-        this.wallet = new ethers.Wallet(privateKey,provider);
-    }
-
-    async createNewKeyPair() {
-        const wallet = ethers.Wallet.createRandom();
-        return {
-            publicKey: wallet.address,
-            privateKey: wallet.privateKey
-        };
+    /**
+     * Given a private key, derive other account details
+     * @param {String} args.privateKey The private key
+     * @param {String} args.providerUrl The URL of the Eth RPC proovider
+     * @param {Object} metadata associated with your command (command, service, role). This makes it possible to constrain user types that can use this command.
+     * @return {Object}
+     */        
+    async set_admin_account(args,metadata) {
+        this.setting.privateKey = args.privateKey;
+        this.setting.providerUrl = args.providerUrl;
+        return true
     }
 
-    async signTransaction(transaction) {
-        const signedTransaction = await this.wallet.sign(transaction);
-        return signedTransaction;
-    }
-
-    async sendTransaction(signedTransaction) {
-        const transaction = await this.provider.sendTransaction(signedTransaction);
-        return transaction.hash;
-    }
-
-    async getTransaction(transactionHash) {
-        const transaction = await this.provider.getTransaction(transactionHash);
-        return transaction;
-    }
-
-    async handle(params) {
-        if (!params.functionName) {
-            throw new Error('params.functionName must be provided');
+    /**
+     * Given a private key, derive other account details
+     * @param {Object} args A valid ETH transacton
+     * @param {Object} metadata associated with your command (command, service, role). This makes it possible to constrain user types that can use this command.
+     * @return {Object}
+     */        
+    async signTransaction(args,metadata) {
+        if (args['chainId'] != 5)
+            return {"error":"Only goerli is supported"} 
+        if (args.privateKey == undefined && this.setting.privateKey == undefined )
+            return {"error":"Require a eth privateKey argument"}
+        let wallet = undefined;
+        if (args.privateKey == undefined)
+        {    
+            wallet = new ethers.Wallet(this.setting.privateKey);
         }
-
-        switch (params.functionName) {
-            case 'getBalance':
-                return await this.getBalance(params.address);
-            case 'getTransactionReceipt':
-                return await this.getTransactionReceipt(params.transactionHash);
-            case 'deployContract':
-                return await this.deployContract(params.contractBytecode, params.args);
-            case 'callContract':
-                return await this.callContract(params.contractAddress, params.contractABI, params.functionName, params.args);
-            case 'estimateGas':
-                return await this.estimateGas(params.transaction);
-            // ... more cases for other functions here ...
-            default:
-                throw new Error(`Unrecognized functionName: ${params.functionName}`);
+        else
+        {
+            wallet = new ethers.Wallet(args.privateKey);
         }
+        
+        let nonce = "12345";
+        if (this.setting.providerUrl != undefined)
+        {
+            const provider = new ethers.providers.JsonRpcProvider(this.setting.providerUrl);        
+            let nonce = await provider.getTransactionCount(wallet.address);
+        }
+        const transaction = {
+            to: args['to'],
+            value: ethers.utils.parseEther(args['value']),
+            gasLimit: args['gasLimit'],
+            maxPriorityFeePerGas: ethers.utils.parseUnits("5", "gwei"),
+            maxFeePerGas: ethers.utils.parseUnits("20", "gwei"),
+            nonce: nonce,
+            type: args['type'],
+            chainId: args['chainId'],
+        };       
+
+        const rawTransaction = await wallet.signTransaction(transaction);    
+        return rawTransaction;
+    }
+    /*
+
+
+    TODO 
+    - Finish these off to enjoy a team victory lap
+    - Having a full end to end L1 + L2 solution is
+    async sendSignedTransaction(args,metadata) {
+        // metadata -- unused
+        let signedTransaction = args["signedTransaction"];
+    
+        let provider = new ethers.providers.JsonRpcProvider();
+        let transaction = await provider.sendTransaction(signedTransaction);
+        let transactionId = transaction.hash;
+        return transactionId;
     }
     
-}
-*/
+    async getTransactionStatus(args,metadata) {
+        // metadata -- unused
+        let transactionId = args["transactionId"];
+    
+        let provider = new ethers.providers.JsonRpcProvider();
+        let transaction = await provider.getTransaction(transactionId);
+        let status = transaction.blockNumber != null ? "confirmed" : "pending";
+        return status;
+    }
+
+    */
+
+} 
+module.exports = EthWalletGateway;
