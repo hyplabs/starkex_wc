@@ -3,6 +3,7 @@ const {IService} = require('./ServiceManager.js');
 const crypto = require('crypto');
 const BIP39 = require('bip39');
 const ethUtil = require('ethereumjs-util');
+const { BigNumber } = require('ethers');
 
 /**
  * EthWalletGateway: IService
@@ -14,7 +15,10 @@ class EthWalletGateway /* implements IService */ {
      * @param {Object} serviceManager our Service Manager
      * @constructor
      */    
-    constructor(serviceManager) {
+    constructor(serviceManager,privateKey,providerUrl) {
+        this.setting = {}
+        this.setting.privateKey = privateKey;
+        this.setting.privateKey = providerUrl;
         this.serviceManager = serviceManager;
     }
     /**
@@ -23,7 +27,7 @@ class EthWalletGateway /* implements IService */ {
      */        
     serviceName(){
         return "eth_wallet_gateway"
-    }
+    } 
 
     /**
      * Run a command, and return some result after.
@@ -46,6 +50,9 @@ class EthWalletGateway /* implements IService */ {
         return {
             "admin": {"generate_eth_account":this.generate_eth_account.bind(this),
                         "derive_account_from_private_key":this.derive_account_from_private_key.bind(this),
+                        "signTransaction":this.signTransaction.bind(this),
+                        "sendSignedTransaction":this.sendSignedTransaction.bind(this),
+                        "getTransactionStatus":this.getTransactionStatus.bind(this)
                      },
             "user" : {}
         };
@@ -83,29 +90,35 @@ class EthWalletGateway /* implements IService */ {
     }  
 
     async signTransaction(args,metadata) {
-        // metadata -- unused
-        let privateKey = args["privateKey"];
-        let to = args["to"];
-        let value = args["value"];
-        let gasPrice = args["gasPrice"];
-        let gasLimit = args["gasLimit"];
-        let nonce = args["nonce"];
-        let chainId = args["chainId"];
-        let data = args["data"];
-    
-        let wallet = new ethers.Wallet(privateKey);
-        let rawTransaction = {
-            nonce: ethers.utils.bigNumberify(nonce),
-            gasPrice: ethers.utils.bigNumberify(gasPrice),
-            gasLimit: ethers.utils.bigNumberify(gasLimit),
-            to: to,
-            value: ethers.utils.bigNumberify(value),
-            data: data,
-            chainId: ethers.utils.bigNumberify(chainId)
-        };
-        let signedTransaction = await wallet.sign(rawTransaction);
-        return signedTransaction;
+
+        if (chainId != 5)
+            return {"error":"Only goerli is supported"} 
+        if (args.privateKey == undefined && this.setting.privateKey == undefined )
+            return {"error":"Require a eth privateKey argument"}
+        const provider = new ethers.providers.JsonRpcProvider(self.setting.providerUrl);        
+        let wallet = undefined;
+        if (args.privateKey == undefined)
+            wallet = new ethers.Wallet(this.setting.privateKey);
+        else
+            wallet = new ethers.Wallet(args.privateKey);
+
+        let nonce = await provider.getTransactionCount(wallet.address);
+
+        const transaction = {
+            to: args['to'],
+            value: ethers.utils.parseEther(args['value']),
+            gasLimit: args['gasLimit'],
+            maxPriorityFeePerGas: ethers.utils.parseUnits("5", "gwei"),
+            maxFeePerGas: ethers.utils.parseUnits("20", "gwei"),
+            nonce: nonce,
+            type: args['type'],
+            chainId: args['chainId'],
+        };       
+
+        const rawTransaction = await wallet.signTransaction(transaction);    
+        return rawTransaction;
     }
+
     async sendSignedTransaction(args,metadata) {
         // metadata -- unused
         let signedTransaction = args["signedTransaction"];

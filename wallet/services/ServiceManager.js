@@ -113,6 +113,8 @@ class ServiceManager {
         return req['promise_response'] // Return the promise for awaiting, so the requester can just hang off this.
     }
 
+
+
     /**
      * Run a command, and return some result after.
      * @param {string} command a string command

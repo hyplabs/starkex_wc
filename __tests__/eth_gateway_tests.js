@@ -24,54 +24,67 @@ Object.defineProperties(global.navigator, {
 
 delete global.window.document.createRange;
 delete global.window.document.getSelection;
-delete global.window.localStorage;
+delete global.window.localStorage; 
+const Wallet = require( '../wallet/wallet.js')
+const WCApp = require( '../web3modal/src/components/WCApp.js')
 
+jest.setTimeout(30000);
 test('Test ServiceManager registration with ethers.js long version', async () => {
   const dom = new JSDOM();
   global.document = dom.window.document;
+  const projectId = 'b700887b888adad39517894fc9ab22e1';
+  const namespaces = {
+      eip155: { methods: ['personal_sign','generate_eth_account','signTransaction'], 
+                chains: ['eip155:1'], 
+                events: ['accountsChanged'] }
+    };
   
-  // Init
-  const ServiceManager = require('../services/ServiceManager.js');
-  const EthWalletGateway = require('../services/EthWalletGateway.js');
-  sm = new ServiceManager();
-  sm.registerService(new EthWalletGateway());  
+  let admin = new Wallet({'ethPrivateKey':"0xa881e3de2f71ddfcd7d5c189c4755b6033328d48e9895d47ea4de00603d6732c",
+                          'ethProviderUrl':"https://goerli.infura.io/v3/37519f5fe2fb4d2cac2711a66aa06514"});
+  let app = new WCApp(); 
+  jest.setTimeout(30000);
+    
+  // Step 1 - App Propse + Get deep link [  ]
+  let linkAndApprove = await app.doConnect(namespaces,projectId);
+  //console.log("The link" + linkAndApprove['deep_link']);
+  let appConnectPromise = app.listen();    
 
-  // Tests
-  let resp = await sm.run("eth_wallet_gateway", "admin", "generate_eth_account",{});
-  console.log(resp);
-  expect(Object.keys(resp).includes("mnemonic")).toEqual(true);
+  // Step 2 - APP Connect [  ]
+  await admin.wc_listen(); // CLI starts to listen
+  await appConnectPromise; // APP is starting to listen
+  await admin.wc_pair(linkAndApprove.deep_link); // Wallet looks for pairing at relay
+  await linkAndApprove.approval; // approval comes back
+  
+  let newAccnt = await app.request("generate_eth_account","eth_wallet_gateway",{});
+ 
+  expect(Object.keys(newAccnt).includes("mnemonic")).toEqual(true);
 
-
-  let gateway = new EthWalletGateway();
 
   let args = {};
-  let metadata = {};
-  let newAccount = await sm.run("eth_wallet_gateway", "admin", "generate_eth_account",{});
-  console.log(resp);
-  expect(Object.keys(resp).includes("mnemonic")).toEqual(true);
-  
-  //
-  let admin_privateKey = "0x7e225d3db6cf09dbd2f153b47a8e08b44a4c4f2a4a7a6a4a6a7a6a4a6a7a6a4";
-  let value = "1000000000000000"; // 0.001 Ether
+  let metadata = {};  
+  let value = "0.001"; // 0.001 Ether
   let gasPrice = "2000000000"; // 2 Gwei
   let gasLimit = "21000";
-  let nonce = "0";
-  let chainId = "1";
-  let data = "0x";
+  let chainId = 5;
   
-  let args = {
-      privateKey: admin_privateKey,
-      to: newAccount.address,
+  args = {
+      to: newAccnt.address,
       value: value,
       gasPrice: gasPrice,
       gasLimit: gasLimit,
       nonce: nonce,
+      type:1,
       chainId: chainId,
-      data: data
   };
-  let metadata = {};
-  let signedTransaction = await sm.run("eth_wallet_gateway", "admin", "signTransaction",args);
+  metadata = {};
 
+  console.log("preparedTransaction");
+  console.log(args);
+  let signedTransaction = await app.request("signTransaction","eth_wallet_gateway",args);
+  console.log("signedTransaction");
+  console.log(signedTransaction);
+
+/*
   console.log("Signed transaction:", signedTransaction);
   
   let args = {signedTransaction: signedTransaction};
@@ -88,7 +101,7 @@ test('Test ServiceManager registration with ethers.js long version', async () =>
       await sleep(5000);
   }
   console.log("Transaction confirmed. Receipt:", transactionReceipt);
-
+  */
 });
 
 

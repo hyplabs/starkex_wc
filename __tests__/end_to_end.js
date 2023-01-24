@@ -17,7 +17,7 @@ test('Simulate a dApp connecting to a CLI wallet', async () => {
   // Step 1 - App Propse + Get deep link [  ]
   let linkAndApprove = await app.doConnect(namespaces,projectId);
   //console.log("The link" + linkAndApprove['deep_link']);
-  let appConnectPromise = app.listen();   
+  let appConnectPromise = app.listen();    
 
   // Step 2 - APP Connect [  ]
   await admin.wc_listen(); // CLI starts to listen
