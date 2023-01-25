@@ -1,7 +1,7 @@
 {
-  "name": "EndToEndWc",
+  "name": "StarkEx dApp and CommonJs Wallet",
   "version": "1.0.0",
-  "description": "A wallet and a dApp using WalletConnect",
+  "description": "A an example wallet and a dApp using WalletConnect and StarkEx",
   "main": "index.js",
   "scripts": {
     "test": "npx jest eth_gateway_tests.js"
@@ -11,6 +11,9 @@
   "dependencies": {
     "@walletconnect/core": "^2.2.1",
     "@walletconnect/sign-client": "^2.2.1",
+    "bip39": "^3.0.4",
+    "ethereumjs-util": "^7.1.5",
+    "ethers": "^5.7.2",
     "jsdom": "^21.1.0",
     "lokijs": "^1.5.12"
   }
