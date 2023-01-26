@@ -83,7 +83,17 @@ let main = async () =>{
   admin = new Wallet({approvalMethod: adminRequest, // This is the handler that is involked when a new event is triggered by a dApp
                     ethPrvateKey: ethPrivateKey, // This is the ETH private key we will use internall to represent the sessioon
                     ethProviderUrl: ethProviderUrl}); // This is the RPC target for the Eth Node we wish to speak with
-  await admin.wc_listen();   
+  let walletWCConfig = {
+    projectId: "b700887b888adad39517894fc9ab22e1",
+    relayUrl: "wss://relay.walletconnect.com",
+    metadata: {
+      name: "Wallet name",
+      description: "A short description for your wallet",
+      url: "#",
+      icons: ["https://walletconnect.com/walletconnect-logo.png"],
+    },
+  }    
+  await admin.wc_listen(walletWCConfig);   
   currentAccount = await admin.serviceManager.run("eth_wallet_gateway", "admin", "generate_eth_account", {});
   await admin.serviceManager.run("eth_wallet_gateway", 
                                   "admin", 

@@ -50,7 +50,17 @@ test('Test ServiceManager registration with ethers.js long version', async () =>
   let appConnectPromise = app.listen();    
 
   // Step 2 - APP Connect [  ]
-  await admin.wc_listen(); // CLI starts to listen
+  let walletWCConfig = {
+    projectId: projectId,
+    relayUrl: "wss://relay.walletconnect.com",
+    metadata: {
+      name: "Wallet name",
+      description: "A short description for your wallet",
+      url: "#",
+      icons: ["https://walletconnect.com/walletconnect-logo.png"],
+    },
+  }    
+  await admin.wc_listen(walletWCConfig); // CLI starts to listen  
   await appConnectPromise; // APP is starting to listen
   await admin.wc_pair(linkAndApprove.deep_link); // Wallet looks for pairing at relay
   await linkAndApprove.approval; // approval comes back
@@ -91,7 +101,10 @@ test('Test ServiceManager registration with ethers.js long version', async () =>
   expect(signedTransaction).toMatch(/^0x[A-Za-z0-9]{10,1000}$/);
                                                       
 
-/* TODO, Add more ETHERS methods if we would like. They are prototyped already, just need a little extra love.
+/* TODO, 
+  Reccomend adding ethers.js methods if we would like. 
+  They are prototyped already, just need a little extra love.
+  
   console.log("Signed transaction:", signedTransaction);
   
   let args = {signedTransaction: signedTransaction};
