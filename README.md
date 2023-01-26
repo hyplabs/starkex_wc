@@ -1,16 +1,16 @@
-## Introduction
+# Introduction
 Welcome to the Crypto Wallet and dApp Solution for StarkEx. This repository contains two projects that work together to provide a comprehensive solution for creating secure and reliable cryptocurrency wallets and decentralized applications (dApps) specifically for the StarkEx ecosystem. The projects are the web3modal and wallet.
 
-*web3modal*
+### web3modal
 The web3modal directory contains a dApp (decentralized application) and a SignClient that allows for secure communication between the dApp and the wallet component of the project. The SignClient is a client-side implementation of the WalletConnect protocol that enables the wallet application to communicate with the dApp. This allows users to access their wallet's functionality and data, such as sending and receiving cryptocurrency, directly from the dApp without compromising security. 
 - To deploy locally run "npm run start" in the web3modal directory
 
 
-*wallet*
+### wallet 
 The wallet directory contains a crypto wallet solution that includes a ServiceManager class that acts as a wrapper for StarkEx's wallet-service. It also includes an example StarkEx class which functions as a gateway to the StarkEx services. Additionally, two example users are included; a CLI (Command Line Interface) user and a WalletConnect user. The ServiceManager allows for a centralized management of the StarkEx wallet-service, making it easy for developers to switch between different services without having to make significant changes to their code.
 - To deploy locally run "node index" in the wallet directory
 
-*mini-wallets*
+### mini-wallets (Services)
 Within the wallet application, there are DRIVERS and SERVICES. Each Service functions as a "mini-wallet" managing the affairs of a specific service. The project is built with extentsion in mind and it should be easy to update and swap new L2 conventions as needed. CommonJs has been used to maximize compatibility with both back-end and desktop deployments, so it may be important to keep this in mind when extending.
 - EthWalletGateway - This is an Ethereum Wallet toy example that can sign a request.
 - StarkExSpotGateway (in progress) - This is a StarkEx service that can manage Spot requests
@@ -33,7 +33,7 @@ For any additional questions or information, please refer to the README.md file 
 
 ## Next Steps / What you should add / for discussion
 This repository is template, and as such developers should be able to access the code quickly as a base layer, without lots of complexity. Our goal is to get you started quickly. However, there are many concessions we have made to keep the code focused, which we summerize below.
-- This is a CommonJS system. This is seen as extremely protable, but does make development and modules more limited. The project goal (today) is it maximize the amount of people that can leverage this repository
+- This is a CommonJS system. This is seen as extremely protable, but does make development and modules more limited. The project goal (today) is it maximize the amount of people that can leverage this repository.
 - the wallet, today, does not store data outside memory (on purpose). This is because there may or may not be a hard-drive. The user of the /wallet/ technology should extend it to handle storage. If the user wants to use this in browser, they will use Chrome / Microsoft storage services. If the user wants to use the back end, they will use the file system, likely with a nodejs file system. They may also opt to use SQL.js or some other system. This wallet does nto care.
 - We use signClient.requests for almost all messages. It is possible to emit WalletConnect events, and send session info, which would increase the handlers and complexity on both sides of the application. 
 - It is possible to create something called a Provider, that can simplify the code base for some users. This topic is not covered, as we imagine some of our users would perfer lower level access.
@@ -42,4 +42,4 @@ This repository is template, and as such developers should be able to access the
 - We did not discuss, or handle, emitting events from the wallet to the user. We also defined a "react only wallet" that does not take its own commands. This was to keep the code simple. A real wallet can also generate events, such as accountChanged, and even session termination
 - We did not keep multiple sessions in memory, or handle terminating sessions
 - We did not give an example of querying or altering the WalletConnect session dynamically
-All of these subjects, and more, can be considered when you develop your real wallet! With the above in mind, it would not be approopriate to use this example as a full application. It is, however, and excellent starting point. 
+All of these subjects, and more, can be considered when you develop your real wallet! With the above in mind, it would not be appropriate to use this example as a full application. It is, however, and excellent starting point. 
