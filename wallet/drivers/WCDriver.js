@@ -35,17 +35,8 @@ class WCDriver{
   }
     
   // First you have to initialize, and set up lisenting for WC Events. None will come through, but get ready!
-  async listen(){
-    this.signClient = await SignClient.init({
-        projectId: "b700887b888adad39517894fc9ab22e1",
-        relayUrl: "wss://relay.walletconnect.com",
-        metadata: {
-          name: "Wallet name",
-          description: "A short description for your wallet",
-          url: "#",
-          icons: ["https://walletconnect.com/walletconnect-logo.png"],
-        },
-      });
+  async listen(config){
+    this.signClient = await SignClient.init(config);
       
       this.signClient.on("session_request", async (event) => {
         let method = event.params.request['method'];
@@ -54,9 +45,7 @@ class WCDriver{
       
         let metadata = {};
 
-        //console.log ("waiting...");
         let resp = await this.queryForResponse(service,method,params,metadata);
-        //console.log ("done...");
         this.signClient.respond({
                               "topic": event.topic,
                               "response":{"id":event.id,
@@ -66,50 +55,6 @@ class WCDriver{
       
 
       this.signClient.on("session_proposal", async (event) => {
-        /**
-         * 
-        {
-              "id": 1674053961082583,
-              "params": {
-                "id": 1674053961082583,
-                "pairingTopic": "2540da25a70a3ace59c50f335d5e3ea53feecdbaacedbcda7a92531cd7280dad",
-                "expiry": 1674054262,
-                "requiredNamespaces": {
-                  "eip155": {
-                    "methods": [
-                      "personal_sign"
-                    ],
-                    "chains": [
-                      "eip155:1"
-                    ],
-                    "events": [
-                      "accountsChanged"
-                    ]
-                  }
-                },
-                "relays": [
-                  {
-                    "protocol": "irn"
-                  }
-                ],
-                "proposer": {
-                  "publicKey": "60d012e715e531c5bd15eee63074ead6a8dd1c0bf59e7bd0daeb8a30b4dccd12",
-                  "metadata": {
-                    "name": "",
-                    "description": "",
-                    "url": "",
-                    "icons": [
-                      ""
-                    ]
-                  }
-                }
-              }
-            }
-         */
-        //console.log("session_proposal EVENT>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-
-        //console.log(JSON.stringify(event, null, 2));
-
         let genericParing = {} 
 
         if (event.params == undefined || event.params.requiredNamespaces == undefined)
