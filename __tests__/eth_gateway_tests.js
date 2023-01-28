@@ -9,6 +9,8 @@ const { window } = new JSDOM('', {
 });
  
 // Remove or disable Node.js-specific features
+// This partly simulates a browser environment, so we can 
+// ensure the application can run in a browser
 global.window = window;
 global.document = window.document;
 global.navigator = window.navigator;
@@ -30,19 +32,19 @@ const WCApp = require( '../web3modal/src/components/WCApp.js')
 
 jest.setTimeout(30000);
 test('Test ServiceManager registration with ethers.js long version', async () => {
+  jest.setTimeout(30000);
   const dom = new JSDOM();
   global.document = dom.window.document;
   const projectId = 'b700887b888adad39517894fc9ab22e1';
   const namespaces = {
-      eip155: { methods: ['personal_sign','generate_eth_account','signTransaction'], 
+      eip155: { methods: ['personal_sign',"get_public_key", "sign_message","get_key_material",'generate_eth_account','signTransaction'], 
                 chains: ['eip155:1'], 
                 events: ['accountsChanged'] }
-    };
+    }; 
   
   let admin = new Wallet({'ethPrivateKey':"0x8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f", // NOT A SECURE KEY
                           'ethProviderUrl':undefined}); // JUSTIN'S INSTANCE
   let app = new WCApp(); 
-  jest.setTimeout(30000);
     
   // Step 1 - App Propse + Get deep link [  ]
   let linkAndApprove = await app.doConnect(namespaces,projectId);
@@ -99,7 +101,18 @@ test('Test ServiceManager registration with ethers.js long version', async () =>
   signedTransaction = await app.request("signTransaction","eth_wallet_gateway",args);
   console.log(signedTransaction);
   expect(signedTransaction).toMatch(/^0x[A-Za-z0-9]{10,1000}$/);
-                                                      
+  let val = "";
+  val = await admin.serviceManager.run("starkex",  "admin",  "get_public_key", {});
+  console.log(val);
+  expect(Object.keys(val).includes("res")).toEqual(true);
+
+  val = await admin.serviceManager.run("starkex",  "admin",  "sign_message", {});
+  console.log(val);
+  expect(Object.keys(val).includes("res")).toEqual(true);
+
+  val = await admin.serviceManager.run("starkex",  "admin",  "get_key_material", {});
+  console.log(val);
+  expect(Object.keys(val).includes("res")).toEqual(true);
 
 /* TODO, 
   Reccomend adding ethers.js methods if we would like. 

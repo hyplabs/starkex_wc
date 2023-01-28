@@ -18,10 +18,14 @@ class Wallet{
     this.interfaces = {}
     const ServiceManager = require('./services/ServiceManager.js');
     const EthWalletGateway = require('./services/EthWalletGateway.js');
+    const StarkExWalletGateway = require('./services/StarkExWalletGateway.js');
+
     this.serviceManager = new ServiceManager();
     this.serviceManager.registerService(new EthWalletGateway(this.serviceManager,
                                                             settings.ethPrivateKey,
                                                             settings.ethProviderUrl));
+    this.serviceManager.registerService(new StarkExWalletGateway(this.serviceManager));
+
     this.system_topics = {};
 
     const CLIDriver = require('./drivers/CLIDriver.js');
