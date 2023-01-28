@@ -37,7 +37,7 @@ test('Test ServiceManager registration with ethers.js long version', async () =>
   global.document = dom.window.document;
   const projectId = 'b700887b888adad39517894fc9ab22e1';
   const namespaces = {
-      eip155: { methods: ['personal_sign',"get_public_key", "sign_message","get_key_material",'generate_eth_account','signTransaction'], 
+      eip155: { methods: ['generate_request_hash','personal_sign',"get_public_key", "sign_message","get_key_material",'generate_eth_account','signTransaction'], 
                 chains: ['eip155:1'], 
                 events: ['accountsChanged'] }
     }; 
@@ -105,14 +105,43 @@ test('Test ServiceManager registration with ethers.js long version', async () =>
   val = await admin.serviceManager.run("starkex",  "admin",  "get_public_key", {});
   console.log(val);
   expect(Object.keys(val).includes("res")).toEqual(true);
-
-  val = await admin.serviceManager.run("starkex",  "admin",  "sign_message", {});
-  console.log(val);
-  expect(Object.keys(val).includes("res")).toEqual(true);
-
+  
   val = await admin.serviceManager.run("starkex",  "admin",  "get_key_material", {});
   console.log(val);
-  expect(Object.keys(val).includes("res")).toEqual(true);
+  expect(Object.keys(val).includes("result")).toEqual(true);
+
+  val = await admin.serviceManager.run("starkex",  
+    "admin",  
+    "generate_request_hash", 
+    {"type":"TRANSFER_REQUEST",
+    amount: '1000',
+    nonce: 1519522183,
+    senderPublicKey: '0x59a543d42bcc9475917247fa7f136298bb385a6388c3df7309955fcb39b8dd4',
+    senderVaultId: 1,
+    token: '0x3003a65651d3b9fb2eff934a4416db301afd112a8492aaf8d7297fc87dcd9f4',
+    receiverPublicKey: '0x5fa3383597691ea9d827a79e1a4f0f7949435ced18ca9619de8ab97e661020',
+    receiverVaultId: 1,
+    expirationTimestamp: 438953});
+  console.log(val);
+  expect(val).toMatch(/^[A-Za-z0-9]{5,1000}$/);
+
+  val = await admin.serviceManager.run("starkex",  
+    "admin",  
+    "sign_message", 
+    {"type":"TRANSFER_REQUEST",
+    amount: '1000',
+    nonce: 1519522183,
+    senderPublicKey: '0x59a543d42bcc9475917247fa7f136298bb385a6388c3df7309955fcb39b8dd4',
+    senderVaultId: 1,
+    token: '0x3003a65651d3b9fb2eff934a4416db301afd112a8492aaf8d7297fc87dcd9f4',
+    receiverPublicKey: '0x5fa3383597691ea9d827a79e1a4f0f7949435ced18ca9619de8ab97e661020',
+    receiverVaultId: 1,
+    expirationTimestamp: 438953});
+  
+  expect(Object.keys(val).includes("r")).toEqual(true);
+  expect(Object.keys(val).includes("s")).toEqual(true);
+  expect(val['r']).toMatch(/^0x[A-Za-z0-9]{5,1000}$/);
+  expect(val['s']).toMatch(/^0x[A-Za-z0-9]{5,1000}$/);
 
 /* TODO, 
   Reccomend adding ethers.js methods if we would like. 

@@ -9,6 +9,8 @@
   "author": "Justin Girard",
   "license": "MIT",
   "dependencies": {
+    "@starkware-industries/starkex-js": "^0.1.0",
+    "@starkware-industries/starkware-crypto-utils": "^0.0.2",
     "@walletconnect/core": "^2.2.1",
     "@walletconnect/sign-client": "^2.2.1",
     "bip39": "^3.0.4",
