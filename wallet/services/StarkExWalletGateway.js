@@ -1,7 +1,5 @@
 /***********************************************************************************
 -- Welcome to the StarkEx Integration.
-Hype would like to officially request that you place an ASCII image 
-of iron man in the beginning of all your files
  
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣀⣤⠖⠉⠉⠉⣉⣙⣛⣲⣶⣤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⢀⣼⣿⣿⣿⣿⣷⣶⣿⠿⠛⠉⠉⠉⠹⣿⣿⣷⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -43,100 +41,10 @@ of iron man in the beginning of all your files
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠛⠋⠉⠉⠉⠉⠁⠀⠀⠀⠀⠀⠈⠉⠙⠋⠉⠉⠁⠀⠀⠀⠀⠙⠛⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 **********************************************************************************/
-
-
-
 const {IService} = require('./ServiceManager.js');
-//const stark_wallet = require('../stark_wallet');
-//const Storage = require('./storage');
-//const {createAccount} = require('./crypto');
-//const StarkExPerpetualAPI = require('./stark-ex-perpetual');
 const StarkExAPI = require('@starkware-industries/starkex-js');
 const starkwareCrypto = require('@starkware-industries/starkware-crypto-utils');
 const crypto = require('crypto');
-
-/*
-const registry = {
-    TRANSFER_REQUEST: {
-        hashFunction: 'getTransferMsgHash',
-        args: ['amount', 'nonce', 'senderVaultId', 'token', 'receiverVaultId', 'receiverPublicKey', 'expirationTimestamp'],
-    },
-    CONDITIONAL_TRANSFER_REQUEST: {
-        hashFunction: 'getTransferMsgHash',
-        args: ['amount', 'nonce', 'senderVaultId', 'token', 'receiverVaultId', 'receiverPublicKey', 'expirationTimestamp', 'factRegistryAddress'],
-    },
-    ORDER_REQUEST: {
-        hashFunction: 'getLimitOrderMsgHash',
-        args: ['vaultIdSell', 'vaultIdBuy', 'amountSell', 'amountBuy', 'tokenSell', 'tokenBuy', 'nonce', 'expirationTimestamp'],
-    },
-};
-const transactionRegistry = {
-    [GatewayRequestType.DEPOSIT_REQUEST]: 'deposit',
-    [GatewayRequestType.WITHDRAWAL_REQUEST]: 'withdrawal',
-    [GatewayRequestType.SETTLEMENT_REQUEST]: 'settlement',
-    [GatewayRequestType.TRANSFER_REQUEST]: 'transfer',
-    [GatewayRequestType.CONDITIONAL_TRANSFER_REQUEST]: 'conditionalTransfer',
-    [GatewayRequestType.MULTI_TRANSACTION_REQUEST]: 'multiTransaction',
-};
-
-class StarkExWallet {
-    constructor(){
-        this.starkExSpotAPI = new StarkExAPI({endpoint: config.starkExApiSpotEndpoint});
-        //this.starkExPerpetualAPI = new StarkExPerpetualAPI({endpoint: config.starkExApiPerpetualEndpoint});
-    }
-    setConfig(config) {
-        this.starkExSpotAPI = new StarkExAPI({endpoint: config.starkExApiSpotEndpoint});
-        //this.starkExPerpetualAPI = new StarkExPerpetualAPI({endpoint: config.starkExApiPerpetualEndpoint});
-    }
-
-    async createAccount() {
-        const account = await createAccount();
-        return account;
-    }
-
-    async getFirstUnusedTxId() {
-        return await this.starkExSpotAPI.gateway.getFirstUnusedTxId();
-    }
-
-   signMessage(request) {
-        let msgHash;
-        const requestType = request.type;
-        if (!registry[requestType]) {
-            throw new Error(`Unsupported request type: ${requestType}`);
-        }
-        if (request.feeInfoUser) {
-            registry[requestType].args.push('feeInfoUser.token', 'feeInfoUser.sourceVaultId', 'feeInfoUser.feeLimit');
-        } else if(request.feeInfo) {
-            registry[requestType].args.push('feeInfo.token', 'feeInfo.sourceVaultId', 'feeInfo.feeLimit');
-        }
-
-        msgHash = starkwareCrypto[registry[requestType].hashFunction](...registry[requestType].args.map(arg => request[arg]));
-        return msgHash;
-        const keyPair = starkwareCrypto.ec.keyFromPrivate(this.storage.getPrivateKey(), 'hex');
-        const msgSignature = starkwareCrypto.sign(keyPair, msgHash);
-        return {r: '0x' + msgSignature.r.toString(16), s: '0x' + msgSignature.s.toString(16)};
-    }
-
-    async function sendTransaction(request) {
-        let txId;
-        let response;
-        try {
-            txId = await this.starkExSpotAPI.gateway.getFirstUnusedTxId();
-        } catch (e) {
-            console.warn(e);
-        }
-        try {
-            Object.assign(request, {txId});
-            const methodName = transactionRegistry[request.type];
-            response = await this.starkExSpotAPI.gateway[methodName](request);
-        } catch (e) {
-            console.error(e.message);
-        }
-        return response;
-    }
-
-*/
-
 
 /**
  * StarkExWalletGateway: IService
@@ -148,26 +56,47 @@ class StarkExWalletGateway /* implements IService */ {
      * @param {Object} serviceManager our Service Manager
      * @constructor
      */    
-    constructor(serviceManager) {
-        this.setting = {}
+    constructor(serviceManager,uri) {
+        this.settings = {}
         this.serviceManager = serviceManager;
+        this.starkExUri = uri;
+        this.settings.accounts = {}
+        this.settings.selectedAccount = undefined
+
         this.registry = {
-            "TRANSFER_REQUEST": {
+            "TransferRequest": {
                 "hashFunction": 'getTransferMsgHash',
                 "args": ['amount', 'nonce', 'senderVaultId', 'token', 'receiverVaultId', 'receiverPublicKey', 'expirationTimestamp'],
             },
-            "CONDITIONAL_TRANSFER_REQUEST": {
+            "ConditionalTransferRequest": {
                 "hashFunction": 'getTransferMsgHash',
                 "args": ['amount', 'nonce', 'senderVaultId', 'token', 'receiverVaultId', 'receiverPublicKey', 'expirationTimestamp', 'factRegistryAddress'],
             },
-            "ORDER_REQUEST": {
+            "OrderRequest": {
                 "hashFunction": 'getLimitOrderMsgHash',
                 "args": ['vaultIdSell', 'vaultIdBuy', 'amountSell', 'amountBuy', 'tokenSell', 'tokenBuy', 'nonce', 'expirationTimestamp'],
             },
         };
-        
+
+        this.sendTransactionFuncs= {
+            "DepositRequest": 'deposit',
+            "WithdrawalRequest": 'withdrawal',
+            "SettlementRequest": 'settlement',
+            "TransferRequest": 'transfer',
+            "ConditionalTransferRequest": 'conditionalTransfer',
+            "MultiTransactionRequest": 'multiTransaction',
+        };       
     }
-    
+
+    set_admin_account(args,metadata)
+    {
+        if (args.providerUrl)
+            this.starkExAPI = new StarkExAPI({endpoint: args.providerUrl});
+        if (args.privateKey)
+            this.privateKey = args.privateKey;
+        return true;
+    }
+
     /**
      * The name of the current Service
      * @return {string}
@@ -177,34 +106,101 @@ class StarkExWalletGateway /* implements IService */ {
     } 
 
     /**
-     * Run a command, and return some result after.
-     * @param {Object} args Arguments intended for your command
+     * Run a dynamic command, and return some result after. This method looks at the registered bound functions,
+     * and routes the function calls to those modules. This is better than copying and pasting several methods
+     * one by one into this interface. This method unpacks the arguments, and places them into an orderd arrangement.
+     * @param {Object} args named dict of arguments intended for your command
      * @param {Object} metadata associated with your command (command, service, role)
      * @return {Object}
-     */        
-    run(args,metadata){
-        return {"error":"Likely not using service router in this simple example Wallet Service"}
-        let event = {...metadata};
-        //this.serviceManager.emit(this.serviceName(), metadata); // emit an event
-        return this[metadata['command']](args);
-    }
-
+     */   
     /**
      * Return a dictionary that defines all methods, and roles that can access that method
      * @return {Object}
      */    
     methodRoles(){
-        return {
+        let roles = {
             "admin": {  
                         "get_public_key":this.get_public_key.bind(this),
                         "sign_message":this.sign_message.bind(this),
+                        "set_admin_account":this.set_admin_account.bind(this),
                         "get_key_material":this.get_key_material.bind(this),
                         "generate_request_hash":this.generate_request_hash.bind(this),
+                        "getTransaction":this.getTransaction.bind(this),
+                        "getFirstUnusedTxId":this.getFirstUnusedTxId.bind(this),
+                        "sendTransaction":this.sendTransaction.bind(this),
                         },
-            "user" : {}
-        };
+            "user" : {
+                "getFirstUnusedTxId":this.getFirstUnusedTxId.bind(this),
+                "getTransaction":this.getTransaction.bind(this),
+            }
+        }; 
+        return roles;
     }  
+    async getTransaction(args,metadata) {
+        return await this.starkExAPI.gateway.getTransaction(args.txId);
+    }
+
+    async getFirstUnusedTxId(args,metadata) {
+        return await this.starkExAPI.gateway.getFirstUnusedTxId();
+    }    
+
+
+    /**
+     * list_accounts
+     * @return {Object}
+     */        
+    list_accounts(args,metadata) {
+        return Object.keys(this.settings.accounts);    
+    }      
     
+    /**
+     * select_account
+     * @return {Object}
+     */        
+    select_account(args,metadata) {
+        if (Object.keys(this.settings.accounts).includes(args.starkKey))
+        {
+            this.setting.selectedAccount = this.setting.accounts[account.starkKey];
+        }//
+        return {"error":"could not find account associated with the starkKey supplied"}        
+    }
+
+    generate_stark_account_from_public_key(args,metadata){
+        if (!args.publicKey)
+        {
+            return {"error":"you do not have a publicKey argument"}
+        }
+        // Request of the linked service that we want private account details
+        // Since we are in an admin context, we can just run this.
+        let ethAccount = await this.serviceManager.run("eth", "admin",  "expose_account", 
+        {
+          "publicKey": args.publicKey,
+        });       
+        if (ethAccount.error)
+            return {"error":"got an error from the eth service looking up the publicKey :"+val.error}
+        if (!ethAccount.privateKey)
+            return {"error":"Internal error. Somehow do not have a private Key"}
+
+        if (!ethAccount.publicKey)
+            return {"error":"Internal error. Somehow do not have a public Key"}
+        let starkAcc = this.generate_stark_account_from_private_key({"privateKey":val.privateKey},{})
+        this.settings.accounts[starkAcc.account] = starkAcc;
+        return {"publicKey":val.publicKey}      
+    }
+
+    generate_stark_account_from_private_key(args,metadata) {
+        if (!args.privateKey)
+        {
+            return {"error":"you do not have a publicKey argument"}
+        }
+        let dat = {privateKey:args.privateKey}        
+        const keyPair = starkwareCrypto.ec.keyFromPrivate(args.privateKey, "hex");
+        const acc = starkwareCrypto.ec.keyFromPublic(keyPair.getPublic(true, "hex"), "hex");
+        dat['account'] =  acc.pub.getX().toString("hex");
+        dat['starkKey'] =  keyPair.getPublic(true, "hex");
+        this.settings.accounts[dat.account] = dat;
+        return dat;
+    }
     /**
      * get_public_key
      * @return {Object}
@@ -245,12 +241,12 @@ class StarkExWalletGateway /* implements IService */ {
         return msgHash.toString(16);
         //let msgHashRecover = parseInt(hexString, 16);
     }
-    
+
     /**
      * sign_message
      * @return {Object}
      */        
-    async sign_message(args,metadata) {
+    async signTransaction(args,metadata) {
         // /return {'error':"not finished"}
         let msgHash;
         if (!(args.hash))
@@ -262,6 +258,33 @@ class StarkExWalletGateway /* implements IService */ {
 
         const msgSignature = starkwareCrypto.sign(keyPair, msgHashRecover);
         return {r: '0x' + msgSignature.r.toString(16), s: '0x' + msgSignature.s.toString(16)};
+    }
+
+    async sendTransaction(args,metadata) {
+        let txId;
+        let response;
+        try 
+        {
+            txId = await this.starkExAPI.gateway.getFirstUnusedTxId();
+        } 
+        catch (e) 
+        {
+            return {"error": `Could not access transaction id from this.starkExAPI.gateway.getFirstUnusedTxId`}; 
+        }
+        
+        if (!args.type || !Object.keys(this.sendTransactionFuncs).includes(args.type))
+            return {"error":`Could not find type ${args.type} in sendTransactionFuncs.`}
+
+        try 
+        {
+            Object.assign(args, {txId});
+            const methodName = this.sendTransactionFuncs[args.type];
+            //delete args[args.type]; 
+            response = await this.starkExAPI.gateway[methodName](args);
+        } catch (e) {
+            return {"error":`Could not send transaction ${JSON.stringify(args)} ${JSON.stringify(e)} `}
+        }
+        return response;
     }
 
     /**
@@ -280,117 +303,18 @@ class StarkExWalletGateway /* implements IService */ {
             "result": deterministicRandomNumber.toString(16)
          }
     }
-
-    ///
-    ///
-    /// TODO / Dev note
-    // Just leaving the payloads here for now, as they might be useful as a reference list / schema later
     /*
-    async starkex_spot_v1_transfer_payload(args,metadata) {
-        //https://docs.google.com/document/d/1kZMM7hIeKQtBfqtmuFUmLiW_oBxO0rsyEZJYNtFLQL4/edit        
+    async get_key_material(args, metadata) {
+        let seed = args.seed || '';
+        let number = args.number || 0;
+        let seedNumber = seed + number.toString();
+        let keyMaterial = crypto.createHmac('sha256', seedNumber)
+            .update(Math.random().toString())
+            .digest('hex');
+        let deterministicRandomNumber = parseInt(keyMaterial.slice(0,8),16);
         return {
-            "res":`    {
-                "type": 1,						
-                "sender_vault_id": integer,			
-                "receiver_vault_id": integer,			
-                "amount": integer,	
-                “nonce”: integer,	
-                "expiration_timestamp": integer,		
-                "token": hex string,				
-                "receiver_public_key": hex string,	
-                }`,
-        }
-    }
-    
-    async starkex_spot_v1_conditional_transfer_payload(args,metadata) {
-        return {
-            "res":`{
-                "type": 2,						
-                "sender_vault_id": integer,			
-                "receiver_vault_id": integer,			
-                "amount": integer,	
-                “nonce”: integer,	
-                "expiration_timestamp": integer,		
-                "token": “hex string”,		
-                "receiver_public_key": hex string,
-                     “condition”: hex string,
-                }
-                `,
-        }
-    }
-
-
-    async starkex_spot_limit_order_with_fees_payload(args,metadata) {
-        return {
-            "res":`{
-                "type": 3,			
-                "vault_sell": integer,
-                "vault_buy": integer,	
-                "amount_sell": integer,
-                “amount_buy”: integer,
-                “nonce”: integer,
-                "expiration_timestamp": integer,
-           "fee_limit": integer,
-           "fee_vault_id": integer,
-                "fee_token": hex string,
-                "token_sell": hex string,
-           "token_buy": hex string,
-           }
-           `,
-        }
-    }
-    async starkex_spot_transfer_with_fees_payload (args,metadata) {
-        return {
-            "res":`{
-                "type": 4,	
-                "sender_vault_id": integer,			
-           "receiver_vault_id": integer,			
-           "amount": integer,	
-           “nonce”: integer,	
-           "expiration_timestamp": integer,
-           "fee_limit": integer,
-           "fee_vault_id": integer,
-           "fee_token": hex string,	
-           "token": hex string,				
-           "receiver_public_key": hex string,
-           }
-           `,
-        }
-    }
-    async starkex_spot_conditional_transfer_with_fees_payload(args,metadata) {
-        return {
-            "res":`Returns: random and deterministic 32 bytes key material..`,
-        }
-    }
-
-    
-    async starkex_spot_multi_asset_order_offchain_payload(args,metadata) {
-        return {
-            "res":`Returns: random and deterministic 32 bytes key material..`,
-        }
-    }
-
-    async starkex_perpetual_limit_order_payload(args,metadata) {
-        return {
-            "res":`Returns: random and deterministic 32 bytes key material..`,
-        }
-    }
-
-    async starkex_perpetual_transfer_payload(args,metadata) {
-        return {
-            "res":`Returns: random and deterministic 32 bytes key material..`,
-        }
-    }
-    
-    async starkex_perpetual_conditional_transfer_payload(args,metadata) {
-        return {
-            "res":`Returns: random and deterministic 32 bytes key material..`,
-        }
-    }
-    */
-    
- 
-    
-
+            "result": deterministicRandomNumber.toString(16)
+         }
+    }*/
 } 
 module.exports = StarkExWalletGateway;

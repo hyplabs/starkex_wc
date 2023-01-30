@@ -24,7 +24,9 @@ class Wallet{
     this.serviceManager.registerService(new EthWalletGateway(this.serviceManager,
                                                             settings.ethPrivateKey,
                                                             settings.ethProviderUrl));
-    this.serviceManager.registerService(new StarkExWalletGateway(this.serviceManager));
+    this.serviceManager.registerService(new StarkExWalletGateway(this.serviceManager,
+                                                            settings.starkPrivateKey,
+                                                            settings.starkProviderUrl));
 
     this.system_topics = {};
 
@@ -35,8 +37,6 @@ class Wallet{
     const WCDriver = require('./drivers/WCDriver.js');
     this.interfaces['wc'] = new WCDriver(this.serviceManager);
     this.doMethodBinding("wc",this.interfaces['wc']);
-  
-
   }
 
   /**

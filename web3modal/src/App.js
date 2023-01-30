@@ -2,12 +2,8 @@ import React, { Component } from 'react';
 import { Navbar, Nav, Form, FormControl, Button } from 'react-bootstrap';
 import { Container, Row, Col } from 'react-bootstrap';
 import MainComponent from './components/MainComponent';
-
-// The important stuff
 import { Web3Modal } from '@web3modal/standalone'
 const WCApp = require(  './components/WCApp.js'); 
-// See this file for examples of how to use SignClient directly.
-// WCApp is structured this way, so that this module can be unit tested by running npm test
 
 class App extends Component {
   constructor(props)
@@ -15,8 +11,11 @@ class App extends Component {
     super(props);  
     this.projectId = 'b700887b888adad39517894fc9ab22e1'
     this.namespaces = {
-      eip155: { methods: ['personal_sign','generate_eth_account','system_get_account_data','signTransaction'], 
-                chains: ['eip155:1'], 
+      eip155: { methods: ['personal_sign',
+                          'generate_eth_account',
+                          'system_get_account_data',
+                          'signTransaction'], 
+                chains: ['eip155:5'], 
                 events: ['accountsChanged'] }
     }
     this.web3Modal = new Web3Modal({ projectId:this.projectId, standaloneChains: this.namespaces.eip155.chains })
@@ -28,9 +27,7 @@ class App extends Component {
      
   handleConnect = async () => {
       try {        
-        //const { uri, approval } = await signClient.connect({ requiredNamespaces: namespaces })
         const { deep_link, approval } = await this.app.doConnect(this.namespaces,this.projectId);
-        //let appConnectPromise = app.listen();   
         let uri = deep_link;
 
         if (uri) {
@@ -51,17 +48,38 @@ class App extends Component {
      * (Go ahead and try to say Y and then N to this request)
      */
   handleGenerateAccount = async () => {
-    let accountResponse = await this.app.request("generate_eth_account","eth_wallet_gateway",{});
-    alert(JSON.stringify(accountResponse));
+    // Here we demo:
+    // (1) ETH private key Generation. This can be used for L1 functions such deposting into StarkEx.
+    let ethResponse = await this.app.request("generate_account","eth",{});
+    
+    // (2) Eth user selection
+    let ethAccount  = await this.app.request("select_account","eth",{});
+    
+    // (3) StarkEx key Generation.
+    let starkResponse = await this.app.request("generate_account_from_private_key","starkex",{});
+    
+    // (4) Stark user selection.
+    let starkAccount = await this.app.request("select_account","starkex",{});
+    alert(JSON.stringify(ethAccount) + starkAccount);
+
+    // Notes / Next Steps:
+    // It is possible to more deeply use SignClient on both the wallet and dApp side to handle session management.
+    // This functionality in WC 2.0 is not fully documented, so it may take weeks of hours to tackle this upgrade.
+    // Instead, we opted to build session management into the wallet kernel itself, which has the effect that sessions 
+    // also propagate to the Command Line, and any other interfaces. It would be a great goal for a repositor contributer
+    // to tackle WalletConnect session management under WC 2.0. 
+
+    // It is also possible to list the current accounts, and to ask
+    //let publicKeys = await this.app.request("list_accounts","eth_wallet_gateway",{});
   }
 
   handleGetAccountData = async () => {
-    let accountResponse = await this.app.request("system_get_account_data","eth_wallet_gateway",{});
-    alert(JSON.stringify(accountResponse));
+    let sessions = await this.app.request("list_sessions","system",{});        
+    alert(JSON.stringify(accountResponse)+JSON.stringify(sessions));
   }
 
-  handleSignTransaction = async () => {
-
+  handleFundingEth = async () => {
+    // Move L1 currency into Starkware with a Deposit
     let args = {};
     let metadata = {};  
     let value = "0.001"; // 0.001 Ether
@@ -78,8 +96,48 @@ class App extends Component {
     };
     metadata = {};
   
-    let signedTransaction = await this.app.request("signTransaction","eth_wallet_gateway",args);
-    alert(JSON.stringify(signedTransaction ));
+    // (1.a) Sign a transaction moving L1 to the starkEx depost function
+    let signedTransaction = await this.app.request("signTransaction","eth",args);
+    
+    // (1.b) Send money to StarkEx deposit
+    let sendTransaction = await this.app.request("sendTransaction","eth",args);
+    fundingTransaction  = sendTransaction;
+    alert(JSON.stringify(sendTransaction ));
+
+    // (1.a) Sign a transaction moving L1 to the starkEx depost function
+    let signedTransaction = await this.app.request("signTransaction","stark",args);
+    
+    // (1.b) Send money to StarkEx deposit
+    let sendTransaction = await this.app.request("sendTransaction","stark",args);
+    fundingTransaction  = sendTransaction;
+    alert(JSON.stringify(sendTransaction ));
+  }
+
+  handleStarkExample = async () => {
+
+    // (1.a) Sign a transaction moving L1 to the starkEx depost function
+    let signedTransaction = await this.app.request("signTransaction","stark",args);
+    
+    // (1.b) Send money to StarkEx deposit
+    let sendTransaction = await this.app.request("sendTransaction","stark",args);
+  }
+
+  disconnect = async () => {
+
+    // (1.a) Sign a transaction moving L1 to the starkEx depost function
+    let signedTransaction = await this.app.request("signTransaction","stark",args);
+    
+    // (1.b) Send money to StarkEx deposit
+    let sendTransaction = await this.app.request("sendTransaction","stark",args);
+  }
+  
+  failAtUsingWallet = async () => {
+
+    // (1.a) Sign a transaction moving L1 to the starkEx depost function
+    let signedTransaction = await this.app.request("signTransaction","stark",args);
+    
+    // (1.b) Send money to StarkEx deposit
+    let sendTransaction = await this.app.request("sendTransaction","stark",args);
   }
 
   render() {
@@ -107,7 +165,7 @@ class App extends Component {
                   <Form.Label>Connect</Form.Label>
                   <Form.Control type="button" value="Connect" onClick={this.handleConnect} />
                   <Form.Text className="text-muted">
-                      This button will connect to the network.
+                      This button will connect to the network. In this demo, you will not have an account.
                   </Form.Text>
               </Form.Group>
               <Form.Group>
