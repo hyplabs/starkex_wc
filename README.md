@@ -33,9 +33,8 @@ For any additional questions or information, please refer to the README.md file 
 
 ## Next Steps / What you should add / for discussion
 This repository is template, and as such developers should be able to access the code quickly as a base layer, without lots of complexity. Our goal is to get you started quickly. However, there are many concessions we have made to keep the code focused, which we summerize below.
-- This is a CommonJS system. This is seen as extremely protable, but does make development and modules more limited. The project goal (today) is it maximize the amount of people that can leverage this repository.
-- the wallet, today, does not store data outside memory (on purpose). This is because there may or may not be a hard-drive. The user of the /wallet/ technology should extend it to handle storage. If the user wants to use this in browser, they will use Chrome / Microsoft storage services. If the user wants to use the back end, they will use the file system, likely with a nodejs file system. They may also opt to use SQL.js or some other system. This wallet does nto care.
-- We use signClient.requests for almost all messages. It is possible to emit WalletConnect events, and send session info, which would increase the handlers and complexity on both sides of the application. 
+- the wallet, today, does not store data outside memory (on purpose). 
+- We use signClient.requests for almost all messages. 
 - It is possible to create something called a Provider, that can simplify the code base for some users. This topic is not covered, as we imagine some of our users would perfer lower level access.
 - We did not discuss, or handle, emitting events from the wallet to the user.
 - We did not keep multiple sessions in memory, or handle terminating sessions
