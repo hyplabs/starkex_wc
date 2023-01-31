@@ -12,15 +12,15 @@ class App extends Component {
     this.projectId = 'b700887b888adad39517894fc9ab22e1'
     this.namespaces = {
       eip155: { methods: ['personal_sign',
-                          'generate_eth_account',
-                          'system_get_account_data',
+                          'generate_account',
+                          'expose_account',
+                          'select_account',
+                          'generate_stark_account_from_public_key',
                           'signTransaction'], 
-                chains: ['eip155:5'], 
+                chains: ['eip155:1'], 
                 events: ['accountsChanged'] }
     }
     this.web3Modal = new Web3Modal({ projectId:this.projectId, standaloneChains: this.namespaces.eip155.chains })
-    //let sessionApproval = undefined;
-    //let signClient = undefined;
     this.app = new WCApp();   
   
   }
@@ -53,14 +53,16 @@ class App extends Component {
     let ethResponse = await this.app.request("generate_account","eth",{});
     
     // (2) Eth user selection
-    let ethAccount  = await this.app.request("select_account","eth",{});
+    let ethAccount  = await this.app.request("select_account","eth",{publicKey: ethResponse.publicKey});
     
     // (3) StarkEx key Generation.
-    let starkResponse = await this.app.request("generate_account_from_private_key","starkex",{});
+    let starkResponse = await this.app.request("generate_stark_account_from_public_key","starkex",{publicKey: ethResponse.publicKey});
     
     // (4) Stark user selection.
-    let starkAccount = await this.app.request("select_account","starkex",{});
-    alert(JSON.stringify(ethAccount) + starkAccount);
+    let starkAccount = await this.app.request("select_account","starkex",{starkKey:starkResponse.starkKey});
+
+    alert(JSON.stringify(ethAccount));
+    alert(JSON.stringify(starkAccount));
 
     // Notes / Next Steps:
     // It is possible to more deeply use SignClient on both the wallet and dApp side to handle session management.
@@ -72,12 +74,7 @@ class App extends Component {
     // It is also possible to list the current accounts, and to ask
     //let publicKeys = await this.app.request("list_accounts","eth_wallet_gateway",{});
   }
-
-  handleGetAccountData = async () => {
-    let sessions = await this.app.request("list_sessions","system",{});        
-    alert(JSON.stringify(accountResponse)+JSON.stringify(sessions));
-  }
-
+  /*
   handleFundingEth = async () => {
     // Move L1 currency into Starkware with a Deposit
     let args = {};
@@ -97,48 +94,12 @@ class App extends Component {
     metadata = {};
   
     // (1.a) Sign a transaction moving L1 to the starkEx depost function
-    let signedTransaction = await this.app.request("signTransaction","eth",args);
-    
-    // (1.b) Send money to StarkEx deposit
-    let sendTransaction = await this.app.request("sendTransaction","eth",args);
-    fundingTransaction  = sendTransaction;
-    alert(JSON.stringify(sendTransaction ));
+    let signedEthTransaction = await this.app.request("signTransaction","eth",args);
+    alert(JSON.stringify(signedEthTransaction ));
 
-    // (1.a) Sign a transaction moving L1 to the starkEx depost function
-    let signedTransaction = await this.app.request("signTransaction","stark",args);
-    
-    // (1.b) Send money to StarkEx deposit
-    let sendTransaction = await this.app.request("sendTransaction","stark",args);
-    fundingTransaction  = sendTransaction;
-    alert(JSON.stringify(sendTransaction ));
-  }
 
-  handleStarkExample = async () => {
+  }*/
 
-    // (1.a) Sign a transaction moving L1 to the starkEx depost function
-    let signedTransaction = await this.app.request("signTransaction","stark",args);
-    
-    // (1.b) Send money to StarkEx deposit
-    let sendTransaction = await this.app.request("sendTransaction","stark",args);
-  }
-
-  disconnect = async () => {
-
-    // (1.a) Sign a transaction moving L1 to the starkEx depost function
-    let signedTransaction = await this.app.request("signTransaction","stark",args);
-    
-    // (1.b) Send money to StarkEx deposit
-    let sendTransaction = await this.app.request("sendTransaction","stark",args);
-  }
-  
-  failAtUsingWallet = async () => {
-
-    // (1.a) Sign a transaction moving L1 to the starkEx depost function
-    let signedTransaction = await this.app.request("signTransaction","stark",args);
-    
-    // (1.b) Send money to StarkEx deposit
-    let sendTransaction = await this.app.request("sendTransaction","stark",args);
-  }
 
   render() {
     return (
@@ -172,21 +133,7 @@ class App extends Component {
                   <Form.Label>Generate Account</Form.Label>
                   <Form.Control type="button" value="Generate Account" onClick={this.handleGenerateAccount} />
                   <Form.Text className="text-muted">
-                      This button will generate a new account.
-                  </Form.Text>
-              </Form.Group>
-              <Form.Group>
-                  <Form.Label>Get Account Data</Form.Label>
-                  <Form.Control type="button" value="Get Account Data" onClick={this.handleGetAccountData} />
-                  <Form.Text className="text-muted">
-                      This button will retrieve data for the current account.
-                  </Form.Text>
-              </Form.Group>
-              <Form.Group>
-                  <Form.Label>Sign Transaction</Form.Label>
-                  <Form.Control type="button" value="Sign Transaction" onClick={this.handleSignTransaction} />
-                  <Form.Text className="text-muted">
-                      This button will sign the current transaction.
+                      This button will generate a new ETH and Stark account.
                   </Form.Text>
               </Form.Group>
           </Form>
