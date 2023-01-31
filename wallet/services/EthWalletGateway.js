@@ -211,11 +211,14 @@ class EthWalletGateway /* implements IService */ {
             return {"error":"There is no provider attached to the ETH wallet. Please use set_admin_account({'providerUrl':URL}) to set one up."}
         }
         try {
+            console.log("In Try");
             let provider = new ethers.providers.JsonRpcProvider(this.settings.providerUrl);
             let transaction = await provider.sendTransaction(signedTransaction);
             let transactionId = transaction.hash;
+            console.log("In Finishing Try");
             return { transaction};
         } catch (error) {
+            console.log("Catching");
             return {"error": error.message};
         }
     }

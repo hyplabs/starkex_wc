@@ -14,10 +14,14 @@ class App extends Component {
       eip155: { methods: ['personal_sign',
                           'generate_account',
                           'expose_account',
+                          'sendTransaction',
+                          'sign_message',
+                          'getFirstUnusedTxId',
+                          'set_admin_account',
                           'select_account',
                           'generate_stark_account_from_public_key',
                           'signTransaction'], 
-                chains: ['eip155:5'], 
+                chains: ['eip155:1'], 
                 events: ['accountsChanged'] }
     }
     this.web3Modal = new Web3Modal({ projectId:this.projectId, standaloneChains: this.namespaces.eip155.chains })
@@ -37,13 +41,13 @@ class App extends Component {
           //console.log(res)
           this.web3Modal.closeModal()
           let sessionApproval = res;
+          this.userInfo.connected =  true;
+          this.setInfo(JSON.stringify(this.userInfo,null,2));      
+          console.log(sessionApproval);
         }
       } catch (err) {
         console.error(err)
       }
-      this.userInfo.connected =  true;
-      //this.userInfo.starkAccount =  starkAccount;
-      this.setInfo(JSON.stringify(this.userInfo,null,2));      
   }
 
     /**
@@ -53,21 +57,28 @@ class App extends Component {
   handleGenerateAccount = async () => {
     // Here we demo:
     // (1) ETH private key Generation. This can be used for L1 functions such deposting into StarkEx.
-    let ethResponse = await this.app.request("generate_account","eth",{});
+    let results = {}
+    results.ethProvider =  "https://goerli.infura.io/v3/37519f5fe2fb4d2cac2711a66aa06514";
+    results.starkProvider =  "https://gw.playground-v2.starkex.co";
+    
+    //await this.request("set_admin_account","eth",   {"providerUrl":results.ethProvider});
+    //await this.request("set_admin_account", "starkex", {"providerUrl":results.starkProvider});
+
+    results.ethResponse = await this.request("generate_account","eth",{});
     
     // (2) Eth user selection
-    let ethAccount  = await this.app.request("select_account","eth",{publicKey: ethResponse.publicKey});
-    
+    results.ethAccount  = await this.request("select_account","eth",{publicKey: results.ethResponse.publicKey}); 
+
     // (3) StarkEx key Generation.
-    let starkResponse = await this.app.request("generate_stark_account_from_public_key","starkex",{publicKey: ethResponse.publicKey});
+    results.starkResponse = await this.request("generate_stark_account_from_public_key","starkex",{'publicKey':results.ethResponse.publicKey});
     
     // (4) Stark user selection.
-    let starkAccount = await this.app.request("select_account","starkex",{starkKey:starkResponse.starkKey});
+    results.starkAccount = await this.request("select_account","starkex",{starkKey:results.starkResponse.starkKey});
 
     //alert(JSON.stringify(ethAccount));
     //alert(JSON.stringify(starkAccount));
-    this.userInfo.publicKey =  ethAccount;
-    this.userInfo.starkKey =  starkAccount;
+    this.userInfo = results;
+    
     this.setInfo(JSON.stringify(this.userInfo,null,2));
     // Notes / Next Steps:
     // It is possible to more deeply use SignClient on both the wallet and dApp side to handle session management.
@@ -77,10 +88,11 @@ class App extends Component {
     // to tackle WalletConnect session management under WC 2.0. 
 
     // It is also possible to list the current accounts, and to ask
-    //let publicKeys = await this.app.request("list_accounts","eth_wallet_gateway",{});
+    //let publicKeys = await this.request("list_accounts","eth_wallet_gateway",{});
   }
 
-  handleL1Deposit = async () => {
+
+  doL1Deposit = async () => {
     // Move L1 currency into Starkware with a Deposit
     let args = {};
     let metadata = {};  
@@ -99,59 +111,49 @@ class App extends Component {
     metadata = {};
   
     // (1.a) Sign a transaction moving L1 to the starkEx depost function
-    let signedEthTransaction = await this.app.request("signTransaction","eth",args);
-    //alert(JSON.stringify(signedEthTransaction ));
+    let signedEthTransaction = await this.request("signTransaction","eth",args);
+    console.log("signedEthTransaction");
+    console.log(signedEthTransaction);    
+    args = {"hex":signedEthTransaction};
+    let sentEthTransaction = await this.request("sendTransaction","eth",args);
+    return {signedEthTransaction, sentEthTransaction};
 
   }
 
-  handleL2Deposit = async () => {
+  doL2Deposit = async (app,admin) => {
+    let results = {}
+    results['sign_message'] = await this.request("sign_message","starkex",         
+      {"type":"TransferRequest",
+      amount: '1000',
+      nonce: 1519522183,
+      senderPublicKey: '0x59a543d42bcc9475917247fa7f136298bb385a6388c3df7309955fcb39b8dd4',
+      senderVaultId: 1,
+      token: '0x3003a65651d3b9fb2eff934a4416db301afd112a8492aaf8d7297fc87dcd9f4',
+      receiverPublicKey: '0x5fa3383597691ea9d827a79e1a4f0f7949435ced18ca9619de8ab97e661020',
+      receiverVaultId: 1,
+      expirationTimestamp: 438953});
 
+    results['getFirstUnusedTxId']  = await this.request("getFirstUnusedTxId","starkex", {});
 
-  }
-  
-  handleL2Examples = async () => {
+    results['sendTransaction'] = await this.request( "sendTransaction", "starkex", 
+      {
+      "type": "DepositRequest",
+      "tokenId": '0x0b333e3142fe16b78628f19bb15afddaef437e72d6d7f5c6c20c6801a27fba6',
+      "amount": '1000',
+      "vaultId": 1,
+      "starkKey": '0x041ee3cca9025d451b8b3cc780829ec2090ef538b6940df1e264aaf19fb62f80',
+      });
 
+      return results;
+  }  
 
-  }
-
-  handleSpecialFunctions = async () => {
-    // get_key_material
-    // sign_message
-
-  }
-
-  /*
-  handleFundingEth = async () => {
-    // Move L1 currency into Starkware with a Deposit
-    let args = {};
-    let metadata = {};  
-    let value = "0.001"; // 0.001 Ether
-    let gasPrice = "2000000000"; // 2 Gwei
-    let gasLimit = "21000";
-    let chainId = 5;
-    args = {
-        to: "31349e0c9d36f3d11b980df145a1abc871399b8a",
-        value: value,
-        gasPrice: gasPrice,
-        gasLimit: gasLimit,
-        type:1,
-        chainId: chainId,
-    };
-    metadata = {};
-  
-    // (1.a) Sign a transaction moving L1 to the starkEx depost function
-    let signedEthTransaction = await this.app.request("signTransaction","eth",args);
-    alert(JSON.stringify(signedEthTransaction ));
-
-
-  }*/
   state = {
     stateInfoArea: "",
     commands: []
   };
 
   addToCommands = command => {
-    this.setState({ commands: [...this.state.commands, command] });
+    this.setState({ commands: [ command,...this.state.commands] });
   };
   setInfo = info => {
     this.setState({ stateInfoArea: info });
@@ -159,7 +161,23 @@ class App extends Component {
   doAddition = () => {
     this.addToCommands("This is a command");
     this.setInfo("Hellow world");
+  };
+
+  request = async (command,service,args) =>{
+    let resStr = [];
+    resStr.push("Command:"+command);
+    resStr.push("service:"+service);
+    let results = await this.app.request( command, service, args);
+    resStr.push("----------------------");
+    resStr.push(JSON.stringify(args,null,2));
+    resStr.push("------");
+    resStr.push(JSON.stringify(results,null,2));
+    resStr.push("---------------------");
+    this.addToCommands(resStr.join("\n"));
+    return results;
   }
+
+
   render() {
     return (
       <div>
@@ -190,8 +208,7 @@ class App extends Component {
                     onClick={this.handleConnect}
                   />
                   <Form.Text className="text-muted">
-                    This button will connect to the network. In this demo,
-                    you will not have an account.
+                    This button will connect to the network.
                   </Form.Text>
                 </Form.Group>
                 <Form.Group>
@@ -206,16 +223,27 @@ class App extends Component {
                   </Form.Text>
                 </Form.Group>
                 <Form.Group>
-                  <Form.Label>Test Add</Form.Label>
+                  <Form.Label>Hard coded L1 Transactions</Form.Label>
                   <Form.Control
                     type="button"
-                    value="Generate Account"
-                    onClick={this.doAddition}
+                    value="ETH Deposit Transactions"
+                    onClick={this.doL1Deposit}
                   />
                   <Form.Text className="text-muted">
-                    This button will generate a new ETH and Stark account.
+                    This button will Demo a L1 Deposit transaction with ETH.
                   </Form.Text>
-                </Form.Group>                
+                </Form.Group>
+                <Form.Group>
+                  <Form.Label>Hard coded L2 Transactions</Form.Label>
+                  <Form.Control
+                    type="button"
+                    value="StarkEx Example Transactions"
+                    onClick={this.doL2Deposit}
+                  />
+                  <Form.Text className="text-muted">
+                    This button will Demo a L2 Deposit transaction with ETH.
+                  </Form.Text>
+                </Form.Group>                                
               </Form>
             </Col>
             <Col xs={12} md={8}>
@@ -228,7 +256,7 @@ class App extends Component {
                   <h5>Previous Commands:</h5>
                   <ul>
                     {this.state.commands.map((command, i) => (
-                      <li key={i}>{command}</li>
+                      <li key={i}><pre>{command}</pre></li>
                     ))}
                   </ul>
                 </div>

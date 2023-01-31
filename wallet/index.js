@@ -1,3 +1,35 @@
+
+const { JSDOM } = require('jsdom');
+const { window } = new JSDOM('', {
+  url: "http://localhost",
+  resources: "usable",
+  runScripts: "dangerously",
+  pretendToBeVisual: true,
+});
+ 
+// Remove or disable Node.js-specific features
+// This partly simulates a browser environment, so we can 
+// ensure the application can run in a browser as is, if needed
+global.window = window;
+global.document = window.document;
+global.navigator = window.navigator;
+global.HTMLElement = window.HTMLElement;
+global.XMLHttpRequest = window.XMLHttpRequest;
+global.Event = window.Event;
+global.CustomEvent = window.CustomEvent;
+
+Object.defineProperties(global.navigator, {
+  userAgent: { value: "jsdom" },
+  platform: { value: "jsdom" },
+});
+
+delete global.window.document.createRange;
+delete global.window.document.getSelection;
+delete global.window.localStorage; 
+
+///
+////////////////////////////////////////////
+///
 const readline = require('readline');
 const  Wallet  = require('./wallet.js');
 
@@ -81,8 +113,10 @@ let main = async () =>{
   let ethPrivateKey = undefined;
   let ethProviderUrl = undefined;
   admin = new Wallet({approvalMethod: adminRequest, // This is the handler that is involked when a new event is triggered by a dApp
-                    ethPrvateKey: ethPrivateKey, // This is the ETH private key we will use internall to represent the sessioon
-                    ethProviderUrl: ethProviderUrl}); // This is the RPC target for the Eth Node we wish to speak with
+                        'ethPrivateKey':"0x8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f", // TESTING. NOT A SECURE KEY
+                            'ethProviderUrl':undefined,
+                            'starkPrivateKey':undefined,
+                            'srarkProviderUrl':undefined}); // This is the RPC target for the Eth Node we wish to speak with
   let walletWCConfig = {
     projectId: "b700887b888adad39517894fc9ab22e1",
     relayUrl: "wss://relay.walletconnect.com",
@@ -99,8 +133,14 @@ let main = async () =>{
                                   "admin", 
                                   "set_admin_account", {"privateKey":currentAccount.privateKey,
                                                         "providerUrl":undefined});
-  
-  console.log(JSON.stringify(currentAccount));
+  await admin.serviceManager.run("eth",  "admin", "set_admin_account", {"providerUrl":"https://goerli.infura.io/v3/37519f5fe2fb4d2cac2711a66aa06514"});
+  await admin.serviceManager.run("starkex", "admin", "set_admin_account", {"providerUrl":"https://gw.playground-v2.starkex.co"});
+
+  console.log ("Connected:");  
+  console.log (await admin.serviceManager.run("starkex", "admin", "getFirstUnusedTxId", {}))
+
+
+  //console.log(JSON.stringify(currentAccount));
   console.log("begin by writing 'auth PASTE_YOUR_DEEP_LINK'");   
   console.log("After session_approval, you may see requests for review. With these requests you can respond with 'approve' and 'reject'.");   
   rl.prompt();

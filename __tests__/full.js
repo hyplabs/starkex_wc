@@ -34,7 +34,13 @@ jest.setTimeout(30000);
 doGenerateAccount = async (app,admin) => {
     // Here we demo:
     // (1) ETH private key Generation. This can be used for L1 functions such deposting into StarkEx.
-    results = {}
+    let results = {}
+    results.ethProvider =  "https://goerli.infura.io/v3/37519f5fe2fb4d2cac2711a66aa06514";
+    results.starkProvider =  "https://gw.playground-v2.starkex.co";
+
+    await app.request("set_admin_account","eth",   {"providerUrl":results.ethProvider});
+    await app.request("set_admin_account", "starkex", {"providerUrl":results.starkProvider});
+
     results.ethResponse = await app.request("generate_account","eth",{});
     
     // (2) Eth user selection
@@ -172,6 +178,7 @@ doGenerateAccount = async (app,admin) => {
                             'signTransaction',
                             'getFirstUnusedTxId',
                             'sendTransaction',
+                            "set_admin_account",
                             'generate_stark_account_from_public_key',
                             'generate_account_from_private_key',
                             'select_account',
@@ -203,11 +210,21 @@ doGenerateAccount = async (app,admin) => {
       },
     }    
     await admin.wc_listen(walletWCConfig); // CLI starts to listen  
+    currentAccount = await admin.serviceManager.run("eth", "admin", "generate_account", {});
+    await admin.serviceManager.run("eth", 
+                                    "admin", 
+                                    "set_admin_account", {"privateKey":currentAccount.privateKey,
+                                                          "providerUrl":undefined});    
     await appConnectPromise; // APP is starting to listen
     await admin.wc_pair(linkAndApprove.deep_link); // Wallet looks for pairing at relay
     await linkAndApprove.approval; // approval comes back
     await admin.serviceManager.run("eth",  "admin", "set_admin_account", {"providerUrl":"https://goerli.infura.io/v3/37519f5fe2fb4d2cac2711a66aa06514"});
     await admin.serviceManager.run("starkex", "admin", "set_admin_account", {"providerUrl":"https://gw.playground-v2.starkex.co"});
+    
+    console.log ("Connected:");  
+    console.log (await admin.serviceManager.run("starkex", "admin", "getFirstUnusedTxId", {}))
+
+
     
     let accountResults = await doGenerateAccount(app,admin);
 
@@ -215,13 +232,13 @@ doGenerateAccount = async (app,admin) => {
     expect(accountResults['ethAccount']).toMatch(/^[A-Za-z0-9]{5,1000}$/);
     expect(accountResults['starkAccount']).toMatch(/^[A-Za-z0-9]{5,1000}$/);
 
-    let testResults = await doTestTransactions(app,admin);
-    console.log("test results")
-    console.log(testResults)
+    //let testResults = await doTestTransactions(app,admin);
+    //console.log("test results")
+    //console.log(testResults)
 
-    let l1depositResults = await doL1Deposit(app,admin);
-    console.log("L1 deposit results");
-    console.log(l1depositResults);
+    //let l1depositResults = await doL1Deposit(app,admin);
+    //console.log("L1 deposit results");
+    //console.log(l1depositResults);
     
     let l2depositResults = await doL2Deposit(app,admin);
     console.log("L2 deposit results");

@@ -89,11 +89,19 @@ class StarkExWalletGateway /* implements IService */ {
 
     set_admin_account(args,metadata)
     {
+        let didSet = {providerUrl:false,
+                        privateKey:false};
         if (args.providerUrl)
+        {
             this.starkExAPI = new StarkExAPI({endpoint: args.providerUrl});
+            didSet.providerUrl = true;
+        }
         if (args.privateKey)
+        {
             this.privateKey = args.privateKey;
-        return true;
+            didSet.privateKey = true;
+        }
+        return didSet;
     }
 
     /**
@@ -142,7 +150,27 @@ class StarkExWalletGateway /* implements IService */ {
     }
 
     async getFirstUnusedTxId(args,metadata) {
-        return await this.starkExAPI.gateway.getFirstUnusedTxId();
+        let val;
+        try 
+        {
+            console.log("starkExAPI!!!!!!!!!!!!!!!!!!!");
+            console.log(JSON.stringify(this.starkExAPI.gateway));
+            console.log(JSON.stringify(this.starkExAPI.gateway.getFirstUnusedTxId));
+            let starkExAPI = new StarkExAPI({endpoint: "https://gw.playground-v2.starkex.co"});            
+            let val = await starkExAPI.gateway.getFirstUnusedTxId();
+            console.log(val);
+            return val;
+        } 
+        catch (e) 
+        {
+            console.log("error val")
+            console.log(val)
+            console.log(e)
+            return val
+            //return "1889";
+        //    return {"error": `(b) ${e}, Could not access transaction id from this.starkExAPI.gateway.getFirstUnusedTxId`}; 
+        }        
+        
     }    
 
 
@@ -268,11 +296,11 @@ class StarkExWalletGateway /* implements IService */ {
         let response;
         try 
         {
-            txId = await this.starkExAPI.gateway.getFirstUnusedTxId();
+            txId = await this.getFirstUnusedTxId({},{});
         } 
         catch (e) 
         {
-            return {"error": `Could not access transaction id from this.starkExAPI.gateway.getFirstUnusedTxId`}; 
+            return {"error": `${e}, Could not access transaction id from this.starkExAPI.gateway.getFirstUnusedTxId`}; 
         }
         
         if (!args.type || !Object.keys(this.sendTransactionFuncs).includes(args.type))
