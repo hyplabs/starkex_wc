@@ -37,9 +37,7 @@ This repository is template, and as such developers should be able to access the
 - the wallet, today, does not store data outside memory (on purpose). This is because there may or may not be a hard-drive. The user of the /wallet/ technology should extend it to handle storage. If the user wants to use this in browser, they will use Chrome / Microsoft storage services. If the user wants to use the back end, they will use the file system, likely with a nodejs file system. They may also opt to use SQL.js or some other system. This wallet does nto care.
 - We use signClient.requests for almost all messages. It is possible to emit WalletConnect events, and send session info, which would increase the handlers and complexity on both sides of the application. 
 - It is possible to create something called a Provider, that can simplify the code base for some users. This topic is not covered, as we imagine some of our users would perfer lower level access.
-- Justin is still moving around classes, and trying to consolidate some key classes. This work will settle over the coming days / week (Noted, Jan 25, for accountability) 
-- Tucker is working on adding the StarkExSpotGateway shortly, and has a great plan to add in these function calls from his unpublished code base. It is expected to be merged in post haste.
-- We did not discuss, or handle, emitting events from the wallet to the user. We also defined a "react only wallet" that does not take its own commands. This was to keep the code simple. A real wallet can also generate events, such as accountChanged, and even session termination
+- We did not discuss, or handle, emitting events from the wallet to the user.
 - We did not keep multiple sessions in memory, or handle terminating sessions
 - We did not give an example of querying or altering the WalletConnect session dynamically
 All of these subjects, and more, can be considered when you develop your real wallet! With the above in mind, it would not be appropriate to use this example as a full application. It is, however, and excellent starting point. 
