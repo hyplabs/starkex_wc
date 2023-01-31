@@ -22,7 +22,7 @@ class App extends Component {
     }
     this.web3Modal = new Web3Modal({ projectId:this.projectId, standaloneChains: this.namespaces.eip155.chains })
     this.app = new WCApp();   
-  
+    this.userInfo = {};
   }
      
   handleConnect = async () => {
@@ -33,14 +33,17 @@ class App extends Component {
         if (uri) {
           this.web3Modal.openModal({ uri })
           let res = await approval; 
-          console.log("Connected 2");
-          console.log(res)
+          //console.log("Connected 2");
+          //console.log(res)
           this.web3Modal.closeModal()
           let sessionApproval = res;
         }
       } catch (err) {
         console.error(err)
       }
+      this.userInfo.connected =  true;
+      //this.userInfo.starkAccount =  starkAccount;
+      this.setInfo(JSON.stringify(this.userInfo,null,2));      
   }
 
     /**
@@ -61,9 +64,11 @@ class App extends Component {
     // (4) Stark user selection.
     let starkAccount = await this.app.request("select_account","starkex",{starkKey:starkResponse.starkKey});
 
-    alert(JSON.stringify(ethAccount));
-    alert(JSON.stringify(starkAccount));
-
+    //alert(JSON.stringify(ethAccount));
+    //alert(JSON.stringify(starkAccount));
+    this.userInfo.publicKey =  ethAccount;
+    this.userInfo.starkKey =  starkAccount;
+    this.setInfo(JSON.stringify(this.userInfo,null,2));
     // Notes / Next Steps:
     // It is possible to more deeply use SignClient on both the wallet and dApp side to handle session management.
     // This functionality in WC 2.0 is not fully documented, so it may take weeks of hours to tackle this upgrade.
@@ -99,50 +104,99 @@ class App extends Component {
 
 
   }*/
+  state = {
+    stateInfoArea: "",
+    commands: []
+  };
 
-
+  addToCommands = command => {
+    this.setState({ commands: [...this.state.commands, command] });
+  };
+  setInfo = info => {
+    this.setState({ stateInfoArea: info });
+  };
+  doAddition = () => {
+    this.addToCommands("This is a command");
+    this.setInfo("Hellow world");
+  }
   render() {
     return (
       <div>
-        <Navbar bg="light" expand="lg">
-          <Navbar.Brand href="#home">dApp Example</Navbar.Brand>
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="mr-auto">
-              <Nav.Link href="#home">Home</Nav.Link>
-              <Nav.Link href="#about">About</Nav.Link>
-            </Nav>
-            <Nav.Link href="#user-sign-in"><i className="fas fa-user-circle"></i></Nav.Link>
-          </Navbar.Collapse>
-        </Navbar>
-        <div className="container">
-          <h1>dApp Example</h1>
-          <Container>
-              <Row>
-                  <Col xs={12} md={4}>
-
-          <Form xs={12} md={4}>
-              <Form.Group>
+      <Navbar bg="light" expand="lg">
+        <Navbar.Brand href="#home">dApp Example</Navbar.Brand>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Collapse id="basic-navbar-nav">
+          <Nav className="mr-auto">
+            <Nav.Link href="#home">Home</Nav.Link>
+            <Nav.Link href="#about">About</Nav.Link>
+          </Nav>
+          <Nav.Link href="#user-sign-in">
+            <i className="fas fa-user-circle" />
+          </Nav.Link>
+        </Navbar.Collapse>
+      </Navbar>
+      <div className="container">
+        <h1>dApp Example</h1>
+        <Container>
+          <Row>
+            <Col xs={12} md={4}>
+              <Form xs={12} md={4}>
+                <Form.Group>
                   <Form.Label>Connect</Form.Label>
-                  <Form.Control type="button" value="Connect" onClick={this.handleConnect} />
+                  <Form.Control
+                    type="button"
+                    value="Connect"
+                    onClick={this.handleConnect}
+                  />
                   <Form.Text className="text-muted">
-                      This button will connect to the network. In this demo, you will not have an account.
+                    This button will connect to the network. In this demo,
+                    you will not have an account.
                   </Form.Text>
-              </Form.Group>
-              <Form.Group>
+                </Form.Group>
+                <Form.Group>
                   <Form.Label>Generate Account</Form.Label>
-                  <Form.Control type="button" value="Generate Account" onClick={this.handleGenerateAccount} />
+                  <Form.Control
+                    type="button"
+                    value="Generate Account"
+                    onClick={this.handleGenerateAccount}
+                  />
                   <Form.Text className="text-muted">
-                      This button will generate a new ETH and Stark account.
+                    This button will generate a new ETH and Stark account.
                   </Form.Text>
-              </Form.Group>
-          </Form>
-        </Col>
-        </Row>
+                </Form.Group>
+                <Form.Group>
+                  <Form.Label>Test Add</Form.Label>
+                  <Form.Control
+                    type="button"
+                    value="Generate Account"
+                    onClick={this.doAddition}
+                  />
+                  <Form.Text className="text-muted">
+                    This button will generate a new ETH and Stark account.
+                  </Form.Text>
+                </Form.Group>                
+              </Form>
+            </Col>
+            <Col xs={12} md={8}>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <div style={{ marginBottom: "1em" }}>
+                  <h5>Account Info:</h5>
+                  <pre><code>{this.state.stateInfoArea}</code></pre>
+                </div>
+                <div>
+                  <h5>Previous Commands:</h5>
+                  <ul>
+                    {this.state.commands.map((command, i) => (
+                      <li key={i}>{command}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </Col>
+          </Row>
         </Container>
-
-        </div>
       </div>
+    </div>
     );
   }
 }
