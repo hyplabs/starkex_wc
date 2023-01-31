@@ -94,8 +94,8 @@ let main = async () =>{
     },
   }    
   await admin.wc_listen(walletWCConfig);   
-  currentAccount = await admin.serviceManager.run("eth_wallet_gateway", "admin", "generate_eth_account", {});
-  await admin.serviceManager.run("eth_wallet_gateway", 
+  currentAccount = await admin.serviceManager.run("eth", "admin", "generate_account", {});
+  await admin.serviceManager.run("eth", 
                                   "admin", 
                                   "set_admin_account", {"privateKey":currentAccount.privateKey,
                                                         "providerUrl":undefined});

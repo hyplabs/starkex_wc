@@ -16,10 +16,13 @@ class EthWalletGateway /* implements IService */ {
      * @constructor
      */    
     constructor(serviceManager,privateKey,providerUrl) {
-        this.setting = {}
-        this.setting.privateKey = privateKey;
-        this.setting.providerUrl = providerUrl;
+        this.settings = {}
+        this.settings.accounts = {}
+        this.settings.selectedAccount = undefined
         this.serviceManager = serviceManager;
+        if (privateKey || providerUrl)
+            this.set_admin_account({'privateKey':privateKey,
+                                    'providerUrl':providerUrl},{})
     }
     
     /**
@@ -27,7 +30,7 @@ class EthWalletGateway /* implements IService */ {
      * @return {string}
      */        
     serviceName(){
-        return "eth_wallet_gateway"
+        return "eth"
     } 
 
     /**
@@ -49,10 +52,13 @@ class EthWalletGateway /* implements IService */ {
      */    
     methodRoles(){
         return {
-            "admin": {"generate_eth_account":this.generate_eth_account.bind(this),
+            "admin": {"generate_account":this.generate_account.bind(this),
                         "derive_account_from_private_key":this.derive_account_from_private_key.bind(this),
+                        "expose_account":this.expose_account.bind(this),
                         "signTransaction":this.signTransaction.bind(this),
                         "set_admin_account":this.set_admin_account.bind(this),
+                        "select_account":this.select_account.bind(this),
+
                         //TODO "sendSignedTransaction":this.sendSignedTransaction.bind(this),
                         //TODO "getTransactionStatus":this.getTransactionStatus.bind(this)
                      },
@@ -64,21 +70,56 @@ class EthWalletGateway /* implements IService */ {
      * Generate a new ETH account
      * @return {Object}
      */        
-    async generate_eth_account(args,metadata) {
+    async generate_account(args,metadata) {
         const mnemonic = BIP39.generateMnemonic();
         let buf = await BIP39.mnemonicToSeed(mnemonic);    
         const privateKey = ethUtil.keccak(buf);
         const publicKey = ethUtil.privateToPublic(privateKey);
         const pubKeyHash = ethUtil.keccak(publicKey);    
         const address = ethUtil.publicToAddress(publicKey).toString('hex');
-        
-        return {
+
+        let acc= {
             mnemonic:mnemonic,
             address:address,
             publicKey:publicKey.toString('hex'),
             privateKey:privateKey.toString('hex')}
+        
+        this.settings.accounts[acc.publicKey] = acc;
+        return {publicKey:acc.publicKey}
+        
     }
-      
+
+    /**
+     * list_accounts
+     * @return {Object}
+     */        
+    list_accounts(args,metadata) {
+    return Object.keys(this.settings.accounts);    
+    }      
+
+    /**
+     * select_account
+     * @return {Object}
+     */        
+    select_account(args,metadata) {
+        if (Object.keys(this.settings.accounts).includes(args.publicKey))
+        {
+            this.settings.selectedAccount = this.settings.accounts[args.publicKey];
+            return args.publicKey;
+        }
+        return {"error":"could not find account associated with the public key supplied"}        
+    }
+
+    expose_account(args,metadata){
+        if (args.publicKey == undefined)
+            return {"error":"need to supply publicKey"}
+
+        if (this.settings.accounts[args.publicKey] == undefined)
+            return {"error":"do not have an entry for this key"}
+        return this.settings.accounts[args.publicKey]; 
+    }
+       
+    
     /**
      * Given a private key, derive other account details
      * @param {String} args.privateKey The private key
@@ -89,13 +130,14 @@ class EthWalletGateway /* implements IService */ {
         // metadata -- unused        
         let private_key_hex = args["privateKey"];
         let accountData = {'privateKey':private_key_hex}
-        const privateKeyBuffer = ethUtil.toBuffer("0x"+private_key_hex);
+        const privateKeyBuffer = ethUtil.toBuffer(private_key_hex);
         const privateKey = privateKeyBuffer;      
         const publicKey = ethUtil.privateToPublic(privateKey);    
         const pubKeyHash = ethUtil.keccak(publicKey);
         const address = ethUtil.publicToAddress(publicKey).toString('hex');
         accountData.address= address; 
         accountData.publicKey= publicKey.toString('hex');
+        accountData.privateKey= privateKey.toString('hex');
         return accountData
     }  
 
@@ -107,8 +149,14 @@ class EthWalletGateway /* implements IService */ {
      * @return {Object}
      */        
     async set_admin_account(args,metadata) {
-        this.setting.privateKey = args.privateKey;
-        this.setting.providerUrl = args.providerUrl;
+        if (args.privateKey)
+        {
+            let account = this.derive_account_from_private_key (args,metadata);
+            this.settings.selectedAccount = account;
+            this.settings.accounts[account.publicKey] = account;
+        }
+        if (args.providerUrl)
+            this.settings.providerUrl = args.providerUrl;
         return true
     }
 
@@ -121,12 +169,12 @@ class EthWalletGateway /* implements IService */ {
     async signTransaction(args,metadata) {
         if (args['chainId'] != 5)
             return {"error":"Only goerli is supported"} 
-        if (args.privateKey == undefined && this.setting.privateKey == undefined )
+        if (args.privateKey == undefined && this.settings.selectedAccount == undefined )
             return {"error":"Require a eth privateKey argument"}
         let wallet = undefined;
         if (args.privateKey == undefined)
         {    
-            wallet = new ethers.Wallet(this.setting.privateKey);
+            wallet = new ethers.Wallet(this.settings.selectedAccount.privateKey);
         }
         else
         {
@@ -134,9 +182,9 @@ class EthWalletGateway /* implements IService */ {
         }
         
         let nonce = "12345";
-        if (this.setting.providerUrl != undefined)
+        if (this.settings.providerUrl != undefined)
         {
-            const provider = new ethers.providers.JsonRpcProvider(this.setting.providerUrl);        
+            const provider = new ethers.providers.JsonRpcProvider(this.settings.providerUrl);        
             let nonce = await provider.getTransactionCount(wallet.address);
         }
         const transaction = {

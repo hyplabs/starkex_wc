@@ -70,8 +70,6 @@ class ServiceManager {
     {
         // This is not a production grade event system!!!
         // This function could be expanded to route events intelligently, considering roles and functions. All we do now, is broadcast to any bound handle.
-        console.log("EMITTED EVENT!!! ");
-        console.log(JSON.stringify(event));
         this.admin_handles.forEach((func)=>{
             func(event);
         })        
@@ -107,7 +105,6 @@ class ServiceManager {
                 clearTimeout(timeoutId);
                 resolve(val);};
           });
-        console.log("SAVED REQUEST!!");
         this.pending_requests[uid] = req;
         this.emit(req); // emit an event, noting a request has arrived that needs attention
         return req['promise_response'] // Return the promise for awaiting, so the requester can just hang off this.
