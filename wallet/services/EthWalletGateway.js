@@ -52,11 +52,13 @@ class EthWalletGateway /* implements IService */ {
      */    
     methodRoles(){
         return {
-            "admin": {"generate_eth_account":this.generate_eth_account.bind(this),
+            "admin": {"generate_account":this.generate_account.bind(this),
                         "derive_account_from_private_key":this.derive_account_from_private_key.bind(this),
                         "expose_account":this.expose_account.bind(this),
                         "signTransaction":this.signTransaction.bind(this),
                         "set_admin_account":this.set_admin_account.bind(this),
+                        "select_account":this.select_account.bind(this),
+
                         //TODO "sendSignedTransaction":this.sendSignedTransaction.bind(this),
                         //TODO "getTransactionStatus":this.getTransactionStatus.bind(this)
                      },
@@ -102,7 +104,8 @@ class EthWalletGateway /* implements IService */ {
     select_account(args,metadata) {
         if (Object.keys(this.settings.accounts).includes(args.publicKey))
         {
-            this.settings.selectedAccount = this.settings.accounts[account.publicKey];
+            this.settings.selectedAccount = this.settings.accounts[args.publicKey];
+            return args.publicKey;
         }
         return {"error":"could not find account associated with the public key supplied"}        
     }
@@ -113,7 +116,7 @@ class EthWalletGateway /* implements IService */ {
 
         if (this.settings.accounts[args.publicKey] == undefined)
             return {"error":"do not have an entry for this key"}
-        return this.settings.accounts[account.publicKey]; 
+        return this.settings.accounts[args.publicKey]; 
     }
        
     
@@ -127,7 +130,7 @@ class EthWalletGateway /* implements IService */ {
         // metadata -- unused        
         let private_key_hex = args["privateKey"];
         let accountData = {'privateKey':private_key_hex}
-        const privateKeyBuffer = ethUtil.toBuffer("0x"+private_key_hex);
+        const privateKeyBuffer = ethUtil.toBuffer(private_key_hex);
         const privateKey = privateKeyBuffer;      
         const publicKey = ethUtil.privateToPublic(privateKey);    
         const pubKeyHash = ethUtil.keccak(publicKey);

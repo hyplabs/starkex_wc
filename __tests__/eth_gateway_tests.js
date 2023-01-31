@@ -195,7 +195,7 @@ test('Test ServiceManager registration with ethers.js long version', async () =>
   
   console.log("Signed transaction:", signedTransaction);
   
-  let args = {signedTransaction: signedTransaction};
+  let args = {signedTransaction: signedTransaction}; 
   let metadata = {};
   let transactionId = await sm.run("eth", "admin", "sendSignedTransaction",args);
   console.log("Transaction ID:", transactionId);

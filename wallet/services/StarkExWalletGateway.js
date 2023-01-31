@@ -1,5 +1,4 @@
 /***********************************************************************************
--- Welcome to the StarkEx Integration.
  
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⣀⣤⠖⠉⠉⠉⣉⣙⣛⣲⣶⣤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⢀⣼⣿⣿⣿⣿⣷⣶⣿⠿⠛⠉⠉⠉⠹⣿⣿⣷⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -122,7 +121,9 @@ class StarkExWalletGateway /* implements IService */ {
             "admin": {  
                         "get_public_key":this.get_public_key.bind(this),
                         "sign_message":this.sign_message.bind(this),
+                        "select_account":this.select_account.bind(this),
                         "set_admin_account":this.set_admin_account.bind(this),
+                        "generate_stark_account_from_public_key":this.generate_stark_account_from_public_key.bind(this),
                         "get_key_material":this.get_key_material.bind(this),
                         "generate_request_hash":this.generate_request_hash.bind(this),
                         "getTransaction":this.getTransaction.bind(this),
@@ -160,12 +161,13 @@ class StarkExWalletGateway /* implements IService */ {
     select_account(args,metadata) {
         if (Object.keys(this.settings.accounts).includes(args.starkKey))
         {
-            this.setting.selectedAccount = this.setting.accounts[account.starkKey];
+            this.settings.selectedAccount = this.settings.accounts[args.starkKey];
+            return args.starkKey;
         }//
         return {"error":"could not find account associated with the starkKey supplied"}        
     }
 
-    generate_stark_account_from_public_key(args,metadata){
+    async generate_stark_account_from_public_key(args,metadata){
         if (!args.publicKey)
         {
             return {"error":"you do not have a publicKey argument"}
@@ -183,9 +185,9 @@ class StarkExWalletGateway /* implements IService */ {
 
         if (!ethAccount.publicKey)
             return {"error":"Internal error. Somehow do not have a public Key"}
-        let starkAcc = this.generate_stark_account_from_private_key({"privateKey":val.privateKey},{})
-        this.settings.accounts[starkAcc.account] = starkAcc;
-        return {"publicKey":val.publicKey}      
+        let starkAcc = this.generate_stark_account_from_private_key({"privateKey":ethAccount.privateKey},{})
+        this.settings.accounts[starkAcc.starkKey] = starkAcc;
+        return {"starkKey":starkAcc.starkKey}      
     }
 
     generate_stark_account_from_private_key(args,metadata) {
@@ -198,9 +200,10 @@ class StarkExWalletGateway /* implements IService */ {
         const acc = starkwareCrypto.ec.keyFromPublic(keyPair.getPublic(true, "hex"), "hex");
         dat['account'] =  acc.pub.getX().toString("hex");
         dat['starkKey'] =  keyPair.getPublic(true, "hex");
-        this.settings.accounts[dat.account] = dat;
+        this.settings.accounts[dat.starkKey] = dat;
         return dat;
     }
+
     /**
      * get_public_key
      * @return {Object}
@@ -246,7 +249,7 @@ class StarkExWalletGateway /* implements IService */ {
      * sign_message
      * @return {Object}
      */        
-    async signTransaction(args,metadata) {
+    async sign_message(args,metadata) {
         // /return {'error':"not finished"}
         let msgHash;
         if (!(args.hash))
