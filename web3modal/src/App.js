@@ -17,7 +17,7 @@ class App extends Component {
                           'select_account',
                           'generate_stark_account_from_public_key',
                           'signTransaction'], 
-                chains: ['eip155:1'], 
+                chains: ['eip155:5'], 
                 events: ['accountsChanged'] }
     }
     this.web3Modal = new Web3Modal({ projectId:this.projectId, standaloneChains: this.namespaces.eip155.chains })
@@ -79,6 +79,47 @@ class App extends Component {
     // It is also possible to list the current accounts, and to ask
     //let publicKeys = await this.app.request("list_accounts","eth_wallet_gateway",{});
   }
+
+  handleL1Deposit = async () => {
+    // Move L1 currency into Starkware with a Deposit
+    let args = {};
+    let metadata = {};  
+    let value = "0.001"; // 0.001 Ether
+    let gasPrice = "2000000000"; // 2 Gwei
+    let gasLimit = "21000";
+    let chainId = 5;
+    args = {
+        to: "31349e0c9d36f3d11b980df145a1abc871399b8a",
+        value: value,
+        gasPrice: gasPrice,
+        gasLimit: gasLimit,
+        type:1,
+        chainId: chainId,
+    };
+    metadata = {};
+  
+    // (1.a) Sign a transaction moving L1 to the starkEx depost function
+    let signedEthTransaction = await this.app.request("signTransaction","eth",args);
+    //alert(JSON.stringify(signedEthTransaction ));
+
+  }
+
+  handleL2Deposit = async () => {
+
+
+  }
+  
+  handleL2Examples = async () => {
+
+
+  }
+
+  handleSpecialFunctions = async () => {
+    // get_key_material
+    // sign_message
+
+  }
+
   /*
   handleFundingEth = async () => {
     // Move L1 currency into Starkware with a Deposit

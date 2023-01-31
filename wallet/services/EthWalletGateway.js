@@ -56,6 +56,7 @@ class EthWalletGateway /* implements IService */ {
                         "derive_account_from_private_key":this.derive_account_from_private_key.bind(this),
                         "expose_account":this.expose_account.bind(this),
                         "signTransaction":this.signTransaction.bind(this),
+                        "sendTransaction":this.sendTransaction.bind(this),
                         "set_admin_account":this.set_admin_account.bind(this),
                         "select_account":this.select_account.bind(this),
 
@@ -201,33 +202,22 @@ class EthWalletGateway /* implements IService */ {
         const rawTransaction = await wallet.signTransaction(transaction);    
         return rawTransaction;
     }
-    /*
 
-
-    TODO 
-    - Finish these off to enjoy a team victory lap
-    - Having a full end to end L1 + L2 solution is
-    async sendSignedTransaction(args,metadata) {
+    async sendTransaction(args,metadata) {
         // metadata -- unused
-        let signedTransaction = args["signedTransaction"];
-    
-        let provider = new ethers.providers.JsonRpcProvider();
-        let transaction = await provider.sendTransaction(signedTransaction);
-        let transactionId = transaction.hash;
-        return transactionId;
+        let signedTransaction = args["hex"];
+        if (this.settings.providerUrl == undefined)
+        {
+            return {"error":"There is no provider attached to the ETH wallet. Please use set_admin_account({'providerUrl':URL}) to set one up."}
+        }
+        try {
+            let provider = new ethers.providers.JsonRpcProvider(this.settings.providerUrl);
+            let transaction = await provider.sendTransaction(signedTransaction);
+            let transactionId = transaction.hash;
+            return { transaction};
+        } catch (error) {
+            return {"error": error.message};
+        }
     }
-    
-    async getTransactionStatus(args,metadata) {
-        // metadata -- unused
-        let transactionId = args["transactionId"];
-    
-        let provider = new ethers.providers.JsonRpcProvider();
-        let transaction = await provider.getTransaction(transactionId);
-        let status = transaction.blockNumber != null ? "confirmed" : "pending";
-        return status;
-    }
-
-    */
-
 } 
 module.exports = EthWalletGateway;

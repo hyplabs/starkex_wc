@@ -100,13 +100,7 @@ doGenerateAccount = async (app,admin) => {
   }
 
 
-/*
-  handleGetAccountData = async () => {
-    let sessions = await this.app.request("list_sessions","system",{});        
-    alert(JSON.stringify(accountResponse)+JSON.stringify(sessions));
-  }
-
-  handleFundingEth = async () => {
+  doL1Deposit = async (app,admin) => {
     // Move L1 currency into Starkware with a Deposit
     let args = {};
     let metadata = {};  
@@ -125,48 +119,42 @@ doGenerateAccount = async (app,admin) => {
     metadata = {};
   
     // (1.a) Sign a transaction moving L1 to the starkEx depost function
-    let signedTransaction = await this.app.request("signTransaction","eth",args);
-    
-    // (1.b) Send money to StarkEx deposit
-    let sendTransaction = await this.app.request("sendTransaction","eth",args);
-    fundingTransaction  = sendTransaction;
-    alert(JSON.stringify(sendTransaction ));
+    let signedEthTransaction = await app.request("signTransaction","eth",args);
+    console.log("signedEthTransaction");
+    console.log(signedEthTransaction);    
+    args = {"hex":signedEthTransaction};
+    let sentEthTransaction = await app.request("sendTransaction","eth",args);
+    return {signedEthTransaction, sentEthTransaction};
 
-    // (1.a) Sign a transaction moving L1 to the starkEx depost function
-    let signedTransaction2 = await this.app.request("signTransaction","stark",args);
-    
-    // (1.b) Send money to StarkEx deposit
-    let sendTransaction2 = await this.app.request("sendTransaction","stark",args);
-    fundingTransaction  = sendTransaction;
-    alert(JSON.stringify(sendTransaction ));
   }
 
-  handleStarkExample = async () => {
+  doL2Deposit = async (app,admin) => {
+    results = {}
+    results['sign_message'] = await app.request("sign_message","starkex",         
+      {"type":"TransferRequest",
+      amount: '1000',
+      nonce: 1519522183,
+      senderPublicKey: '0x59a543d42bcc9475917247fa7f136298bb385a6388c3df7309955fcb39b8dd4',
+      senderVaultId: 1,
+      token: '0x3003a65651d3b9fb2eff934a4416db301afd112a8492aaf8d7297fc87dcd9f4',
+      receiverPublicKey: '0x5fa3383597691ea9d827a79e1a4f0f7949435ced18ca9619de8ab97e661020',
+      receiverVaultId: 1,
+      expirationTimestamp: 438953});
 
-    // (1.a) Sign a transaction moving L1 to the starkEx depost function
-    let signedTransaction = await this.app.request("signTransaction","stark",args);
-    
-    // (1.b) Send money to StarkEx deposit
-    let sendTransaction = await this.app.request("sendTransaction","stark",args);
-  }
+    results['getFirstUnusedTxId']  = await app.request("getFirstUnusedTxId","starkex", {});
 
-  disconnect = async () => {
+    results['sendTransaction'] = await app.request( "sendTransaction", "starkex", 
+      {
+      "type": "DepositRequest",
+      "tokenId": '0x0b333e3142fe16b78628f19bb15afddaef437e72d6d7f5c6c20c6801a27fba6',
+      "amount": '1000',
+      "vaultId": 1,
+      "starkKey": '0x041ee3cca9025d451b8b3cc780829ec2090ef538b6940df1e264aaf19fb62f80',
+      });
 
-    // (1.a) Sign a transaction moving L1 to the starkEx depost function
-    let signedTransaction = await this.app.request("signTransaction","stark",args);
-    
-    // (1.b) Send money to StarkEx deposit
-    let sendTransaction = await this.app.request("sendTransaction","stark",args);
-  }
-  
-  failAtUsingWallet = async () => {
+      return results;
+  }  
 
-    // (1.a) Sign a transaction moving L1 to the starkEx depost function
-    let signedTransaction = await this.app.request("signTransaction","stark",args);
-    
-    // (1.b) Send money to StarkEx deposit
-    let sendTransaction = await this.app.request("sendTransaction","stark",args);
-  }*/
 
 
   test('Test ServiceManager registration with ethers.js long version', async () => {
@@ -228,11 +216,15 @@ doGenerateAccount = async (app,admin) => {
     expect(accountResults['starkAccount']).toMatch(/^[A-Za-z0-9]{5,1000}$/);
 
     let testResults = await doTestTransactions(app,admin);
-    console.log("deposit results")
+    console.log("test results")
     console.log(testResults)
-    // ***Gui Upgrades (9-11)
-    // 0 - buttons exist for some flow
-    // 1 - Can see transactions in a list
-    // 2 - Whole experience runs on master
+
+    let l1depositResults = await doL1Deposit(app,admin);
+    console.log("L1 deposit results");
+    console.log(l1depositResults);
+    
+    let l2depositResults = await doL2Deposit(app,admin);
+    console.log("L2 deposit results");
+    console.log(l2depositResults);
 
   });
