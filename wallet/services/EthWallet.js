@@ -9,7 +9,7 @@ const { BigNumber } = require('ethers');
  * EthWalletGateway: IService
  * An example implementation of a wallet + gateway combination. Partial implementation meant to be instuctive in nature.
  */
-class EthWalletGateway /* implements IService */ {
+class EthWallet /* implements IService */ {
     /**
      * Create a new ServiceManager instance.
      * @param {Object} serviceManager our Service Manager
@@ -85,7 +85,7 @@ class EthWalletGateway /* implements IService */ {
             publicKey:publicKey.toString('hex'),
             privateKey:privateKey.toString('hex')}
         
-        this.settings.accounts[acc.publicKey] = acc;
+        this.settings.accounts[acc.publicKey] = acc; 
         return {publicKey:acc.publicKey}
         
     }
@@ -104,7 +104,7 @@ class EthWalletGateway /* implements IService */ {
      */        
     select_account(args,metadata) {
         if (Object.keys(this.settings.accounts).includes(args.publicKey))
-        {
+        { 
             this.settings.selectedAccount = this.settings.accounts[args.publicKey];
             return args.publicKey;
         }
@@ -223,4 +223,4 @@ class EthWalletGateway /* implements IService */ {
         }
     }
 } 
-module.exports = EthWalletGateway;
+module.exports = EthWallet;
