@@ -147,9 +147,9 @@ doGenerateAccount = async (app,admin) => {
       receiverVaultId: 1,
       expirationTimestamp: 438953});
 
-    results['getFirstUnusedTxId']  = await app.request("getFirstUnusedTxId","starkex", {});
+    results['getFirstUnusedTxId']  = await app.run("getFirstUnusedTxId","starkexgate", {});
 
-    results['sendTransaction'] = await app.request( "sendTransaction", "starkex", 
+    results['sendTransaction'] = await app.run( "sendTransaction", "starkexgate", 
       {
       "type": "DepositRequest",
       "tokenId": '0x0b333e3142fe16b78628f19bb15afddaef437e72d6d7f5c6c20c6801a27fba6',
@@ -160,7 +160,36 @@ doGenerateAccount = async (app,admin) => {
 
       return results;
   }  
+/*
+Connect Wallet:
+---------------------------
+[ ] - End-user uses a StarkEx App and presses “Connect Wallet”
+[ ] - Pop-up window with optional wallets and WalletConnect
+[ ] - Presses “WalletConnect”
+[ ] - Pop-up window with QR code
+[ ] - End user scans code with a WalletConnect compatible wallet, or enters the deep_link (in the case of a Command Line Interface)
 
+Get public key:
+---------------------------
+[ ] - App sends to wallet Get_public_key
+[ ] - Wallet derives Stark pair keys from mnemonic (BIP32, EIP-2645)
+[ ] - Wallet send the app the public Stark key
+
+Deposit (Spot):
+---------------------------
+[ ] - End user presses “deposit” on app
+[ ] - App sends an on-chain deposit request to an Ethereum wallet (which includes Stark_public_key, asset_type, vault_id,quantized_amount). The deposit operation supports deposits of ETH, ERC-20, ERC-721, and ERC-1155.
+[ ] - App sends off-chain deposit to StarkEx service
+
+
+Transfer (Spot):
+---------------------------
+[ ] - End user request to transfer funds (presses ‘transfer’ in app)
+[ ] - App sends Stark wallet sign_message request for transaction type transfer (if it’s StarkEx v1) or type transaction_with_fees (for Starkex version 4.5)
+[ ] - Wallet parse message payload and present to end-user to sign
+[ ] - User signs message with Stark key corresponding to this specific app
+[ ] - App sends a transfer request transaction to the StarkEx gateway, using the add_transaction API with the TransferRequest transaction type.
+*/
 
 
   test('Test ServiceManager registration with ethers.js long version', async () => {
@@ -192,7 +221,11 @@ doGenerateAccount = async (app,admin) => {
                             'starkPrivateKey':undefined,
                             'srarkProviderUrl':undefined,
                              }); // JUSTIN'S INSTANCE
-    let app = new WCApp(); 
+    let app = new WCApp({'ethPrivateKey':"0x8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f", // NOT A SECURE KEY
+    'ethProviderUrl':undefined,
+    'starkPrivateKey':undefined,
+    'srarkProviderUrl':undefined,
+     }); 
       
     // Step 1 - App Propse + Get deep link [  ]
     let linkAndApprove = await app.doConnect(namespaces,projectId);
@@ -211,18 +244,18 @@ doGenerateAccount = async (app,admin) => {
     }    
     await admin.wc_listen(walletWCConfig); // CLI starts to listen  
     currentAccount = await admin.serviceManager.run("eth", "admin", "generate_account", {});
-    await admin.serviceManager.run("eth", 
+    await app.serviceManager.run("eth", 
                                     "admin", 
                                     "set_admin_account", {"privateKey":currentAccount.privateKey,
                                                           "providerUrl":undefined});    
     await appConnectPromise; // APP is starting to listen
     await admin.wc_pair(linkAndApprove.deep_link); // Wallet looks for pairing at relay
     await linkAndApprove.approval; // approval comes back
-    await admin.serviceManager.run("eth",  "admin", "set_admin_account", {"providerUrl":"https://goerli.infura.io/v3/37519f5fe2fb4d2cac2711a66aa06514"});
-    await admin.serviceManager.run("starkex", "admin", "set_admin_account", {"providerUrl":"https://gw.playground-v2.starkex.co"});
+    await app.serviceManager.run("ethgateway",  "admin", "set_gateway", {"providerUrl":"https://goerli.infura.io/v3/37519f5fe2fb4d2cac2711a66aa06514"});
+    await app.serviceManager.run("starkexgate", "admin", "set_gateway", {"providerUrl":"https://gw.playground-v2.starkex.co"});
     
     console.log ("Connected:");  
-    console.log (await admin.serviceManager.run("starkex", "admin", "getFirstUnusedTxId", {}))
+    console.log (await app.serviceManager.run("starkexgate", "user", "getFirstUnusedTxId", {}))
 
 
     
@@ -231,7 +264,7 @@ doGenerateAccount = async (app,admin) => {
     console.log(JSON.stringify(accountResults));
     expect(accountResults['ethAccount']).toMatch(/^[A-Za-z0-9]{5,1000}$/);
     expect(accountResults['starkAccount']).toMatch(/^[A-Za-z0-9]{5,1000}$/);
-
+    
     //let testResults = await doTestTransactions(app,admin);
     //console.log("test results")
     //console.log(testResults)
@@ -239,7 +272,6 @@ doGenerateAccount = async (app,admin) => {
     //let l1depositResults = await doL1Deposit(app,admin);
     //console.log("L1 deposit results");
     //console.log(l1depositResults);
-    
     let l2depositResults = await doL2Deposit(app,admin);
     console.log("L2 deposit results");
     console.log(l2depositResults);

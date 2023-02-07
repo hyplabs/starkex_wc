@@ -1,9 +1,20 @@
 const { SignClient } = require( "@walletconnect/sign-client");
+
+
 class WCApp{
-    constructor()
+    constructor(settings)
     {
         this.signClient = undefined; 
         this.sessionApproval = undefined;
+        const ServiceManager = require('../services/ServiceManager.js');
+        const EthWallet = require('../services/EthWallet.js');
+        const EthGateway = require('../services/EthGateway.js');
+        const StarkExGateway = require('../services/StarkExGateway.js');
+    
+        this.serviceManager = new ServiceManager();
+        this.serviceManager.registerService(new EthGateway(this.serviceManager,settings.ethProviderUrl));
+        this.serviceManager.registerService(new EthWallet(this.serviceManager,settings.ethPrivateKey));    
+        this.serviceManager.registerService(new StarkExGateway(this.serviceManager,settings.starkProviderUrl));
     }
 
     async doConnect(namespaces,projectId){
@@ -30,7 +41,14 @@ class WCApp{
     
       });
     }
-
+    /**
+     * request(method,service,params)
+     * Via the WalletConnect RPC  tunnel, request a function call from a wallet.
+     * @param {Object} method the name of the method to be invoked 
+     * @param {Object} service the service in the wallet that contains the method
+     * @param {Object} params any relevant parameters
+     * @return {Object}
+     */ 
     async request(method,service,params){
       const result = await this.signClient.request({
         topic: this.sessionApproval.topic,
@@ -44,14 +62,20 @@ class WCApp{
         },
       });
 
-      //console.log("SIGN RESP")
-      ///console.log(result);      
-      //console.log("Dapp sent message");
       return result;
     }
 
-
+    /**
+     * run(method,service,params)
+     * Locally, in the current set of dApp services, run some kind of method.
+     * @param {Object} method the name of the method to be invoked 
+     * @param {Object} service the service in the wallet that contains the method
+     * @param {Object} params any relevant parameters
+     * @return {Object}
+     */ 
+    async run(method,service,params){
+      return this.serviceManager.run(service,"admin",method,params)
+    }    
 
 } 
-
 module.exports = WCApp;
