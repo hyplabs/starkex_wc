@@ -1,4 +1,7 @@
 const { SignClient } = require( "@walletconnect/sign-client");
+const EthGateway = require('../services/EthGateway.js');
+const EthWallet = require('../services/EthGateway.js');
+const ServiceManager = require('../services/ServiceManager.js');
 
 
 class WCApp{
@@ -6,15 +9,11 @@ class WCApp{
     {
         this.signClient = undefined; 
         this.sessionApproval = undefined;
-        const ServiceManager = require('../services/ServiceManager.js');
-        const EthWallet = require('../services/EthWallet.js');
-        const EthGateway = require('../services/EthGateway.js');
-        const StarkExGateway = require('../services/StarkExGateway.js');
-    
+        settings = {};
         this.serviceManager = new ServiceManager();
         this.serviceManager.registerService(new EthGateway(this.serviceManager,settings.ethProviderUrl));
         this.serviceManager.registerService(new EthWallet(this.serviceManager,settings.ethPrivateKey));    
-        this.serviceManager.registerService(new StarkExGateway(this.serviceManager,settings.starkProviderUrl));
+        //this.serviceManager.registerService(new StarkExGateway(this.serviceManager,settings.starkProviderUrl));
     }
 
     async doConnect(namespaces,projectId){

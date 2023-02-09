@@ -36,6 +36,8 @@ class WCDriver{
     
   // First you have to initialize, and set up lisenting for WC Events. None will come through, but get ready!
   async listen(config){
+    console.log("the config");
+    console.log(config);
     this.signClient = await SignClient.init(config);
       
       this.signClient.on("session_request", async (event) => {

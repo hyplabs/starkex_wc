@@ -1,9 +1,18 @@
-const ethers = require('ethers');
+/*
+import * as  ethers from 'ethers';
+import {IService} from './ServiceManager.js';
+//import * as crypto from 'crypto';
+import * as BIP39 from 'bip39';
+import * as ethUtil from 'ethereumjs-util';
+import { BigNumber } from 'ethers';
+*/
+
+const ethers = require( 'ethers');
 const {IService} = require('./ServiceManager.js');
-const crypto = require('crypto');
 const BIP39 = require('bip39');
 const ethUtil = require('ethereumjs-util');
-const { BigNumber } = require('ethers'); 
+const { BigNumber } = require( 'ethers');
+
 
 /**
  * EthWalletGateway: IService
@@ -192,4 +201,6 @@ class EthWallet /* implements IService */ {
     }
 
 } 
+
+//export default EthWallet;
 module.exports = EthWallet;

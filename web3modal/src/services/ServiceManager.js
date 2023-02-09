@@ -138,4 +138,5 @@ class ServiceManager {
     }    
 }
 
-module.exports = ServiceManager;
+//export default ServiceManager;
+module.exports=  ServiceManager;

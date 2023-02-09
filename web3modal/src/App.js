@@ -64,10 +64,10 @@ class App extends Component {
     //await this.request("set_admin_account","eth",   {"providerUrl":results.ethProvider});
     //await this.request("set_admin_account", "starkex", {"providerUrl":results.starkProvider});
 
-    results.ethResponse = await this.request("generate_account","eth",{});
+    results.ethResponse = await this.run("generate_account","eth",{});
     
     // (2) Eth user selection
-    results.ethAccount  = await this.request("select_account","eth",{publicKey: results.ethResponse.publicKey}); 
+    results.ethAccount  = await this.run("select_account","eth",{publicKey: results.ethResponse.publicKey}); 
 
     // (3) StarkEx key Generation.
     results.starkResponse = await this.request("generate_stark_account_from_public_key","starkex",{'publicKey':results.ethResponse.publicKey});
@@ -111,11 +111,11 @@ class App extends Component {
     metadata = {};
   
     // (1.a) Sign a transaction moving L1 to the starkEx depost function
-    let signedEthTransaction = await this.request("signTransaction","eth",args);
+    let signedEthTransaction = await this.run("signTransaction","eth",args);
     console.log("signedEthTransaction");
     console.log(signedEthTransaction);    
     args = {"hex":signedEthTransaction};
-    let sentEthTransaction = await this.request("sendTransaction","eth",args);
+    let sentEthTransaction = await this.run("sendTransaction","eth",args);
     return {signedEthTransaction, sentEthTransaction};
 
   }
@@ -168,7 +168,7 @@ class App extends Component {
     resStr.push("Command:"+command);
     resStr.push("service:"+service);
     let results = await this.app.request( command, service, args);
-    resStr.push("----------------------");
+    resStr.push("REQUESTING---------------");
     resStr.push(JSON.stringify(args,null,2));
     resStr.push("------");
     resStr.push(JSON.stringify(results,null,2));
@@ -177,6 +177,20 @@ class App extends Component {
     return results;
   }
 
+  run = async (command,service,args) =>{
+    let resStr = [];
+    resStr.push("Command:"+command);
+    resStr.push("service:"+service);
+    let results = await this.app.run( command, service, args);
+    resStr.push("RUNNING---------------");
+    resStr.push(JSON.stringify(args,null,2));
+    resStr.push("------");
+    resStr.push(JSON.stringify(results,null,2));
+    resStr.push("---------------------");
+    this.addToCommands(resStr.join("\n"));
+    return results;
+  }    
+    
 
   render() {
     return (
