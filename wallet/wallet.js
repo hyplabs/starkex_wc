@@ -18,14 +18,10 @@ class Wallet
   constructor(settings){
     this.interfaces = {}
     const ServiceManager = require('./services/ServiceManager.js');
-    const EthWallet = require('./services/EthWallet.js');
     const StarkExWallet = require('./services/StarkExWallet.js');
-    const EthGateway = require('./services/EthGateway.js');
     const StarkExGateway = require('./services/StarkExGateway.js');
 
     this.serviceManager = new ServiceManager();
-    this.serviceManager.registerService(new EthGateway(this.serviceManager,settings.ethProviderUrl));
-    this.serviceManager.registerService(new EthWallet(this.serviceManager,settings.ethPrivateKey));    
     this.serviceManager.registerService(new StarkExGateway(this.serviceManager,settings.starkProviderUrl));
     this.serviceManager.registerService(new StarkExWallet(this.serviceManager,settings.starkPrivateKey));
 

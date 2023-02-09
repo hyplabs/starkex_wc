@@ -111,7 +111,6 @@ class ServiceManager {
      * @return {Object}
      */        
     run(service,role,command,args){
-
         if(!(Object.keys(this.services).includes(service)))
             return {"error":"Do not have a service '"+service+"' registered."}
         if(!(['admin','user'].includes(role)))

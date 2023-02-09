@@ -124,7 +124,11 @@ class ServiceManager {
             return {"error":"Do not have a role '"+role+"'  supported in the Service."}        
 
         if(!(Object.keys(roleCommandsMap[role]).includes(command)))
+        {
+            console.log(role);
+            console.log(Object.keys(roleCommandsMap[role]));
             return {"error":"Command '"+command+"' not supported in the Service."}        
+        }
         let func = roleCommandsMap[role][command];
         
         let event = {...args};

@@ -133,8 +133,8 @@ let main = async () =>{
                                   "admin", 
                                   "set_admin_account", {"privateKey":currentAccount.privateKey,
                                                         "providerUrl":undefined});
-  await admin.serviceManager.run("eth",  "admin", "set_admin_account", {"providerUrl":"https://goerli.infura.io/v3/37519f5fe2fb4d2cac2711a66aa06514"});
-  await admin.serviceManager.run("starkex", "admin", "set_admin_account", {"providerUrl":"https://gw.playground-v2.starkex.co"});
+  //await admin.serviceManager.run("eth",  "admin", "set_admin_account", {"providerUrl":"https://goerli.infura.io/v3/37519f5fe2fb4d2cac2711a66aa06514"});
+  await admin.serviceManager.run("starkexgate", "admin", "set_gateway", {"providerUrl":"https://gw.playground-v2.starkex.co"});
 
   console.log ("Connected:");  
   console.log (await admin.serviceManager.run("starkex", "admin", "getFirstUnusedTxId", {}))

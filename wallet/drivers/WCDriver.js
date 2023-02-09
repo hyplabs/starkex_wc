@@ -16,15 +16,7 @@ const ServiceManager = require('../services/ServiceManager.js');
 class WCDriver{
     
   async queryForResponse(service,method,params,metadata){
-    //let resp = await this.serviceManager.request("eth_wallet_gateway", "admin", "generate_eth_account",{});
-    //console.log("queryForResponse---------------------------------");
-    //console.log(service);
-    //console.log(method);
-    //console.log(params);
-
     let resp = await this.serviceManager.request(service, "admin", method,params);
-    //console.log ("SESSION REQUEST (A.2)");
-    //console.log(resp);
     return resp
   }
 
@@ -36,8 +28,6 @@ class WCDriver{
     
   // First you have to initialize, and set up lisenting for WC Events. None will come through, but get ready!
   async listen(config){
-    console.log("the config");
-    console.log(config);
     this.signClient = await SignClient.init(config);
       
       this.signClient.on("session_request", async (event) => {
@@ -90,7 +80,7 @@ class WCDriver{
             
               
         
-        /*
+        /* This is a VERY useful template to have for debugging reasons. Delete close to production.
         let apprv = {
           "id":event.id,
           "namespaces":{
@@ -111,50 +101,11 @@ class WCDriver{
       });          
   }
 
-
-    async SendTestMessage(){
-      console.log("Sending Message to dApp");
-      let keys = Object.keys(this.system_topics);
-        console.log("Ping !");
-        const result = await this.signClient.request({
-          topic: keys[0],
-          chainId: "eip155:1",
-          request: {
-            id: 1,
-            jsonrpc: "2.0",
-            method: "personal_sign",
-            params: [
-              "0x1d85568eEAbad713fBB5293B45ea066e552A90De",
-              "0x7468697320697320612074657374206d65737361676520746f206265207369676e6564",
-            ],
-          },
-        });
-        console.log("Got response from dApp");
-        console.log(result);
-  
-
-    }
-
-    //Second, to allow events from a device, you need to pair 
     async pair(auth_code)
     {
       let step1 = await this.signClient.core.pairing.pair({ uri: auth_code })
-      console.log("Step 1")
-      console.log(step1);
-      
-      let step2 =await this.signClient.core.pairing.activate({ topic: step1.topic })
-      console.log("Step 2")
-      console.log(step2);
-      
+      let step2 =await this.signClient.core.pairing.activate({ topic: step1.topic })      
       const pairings = this.signClient.core.pairing.getPairings()
-      console.log("List")
-      console.log(pairings);
-
-    }
-
-    sayHello() {
-        console.log("hello");
-        return true;
     }
 }
 

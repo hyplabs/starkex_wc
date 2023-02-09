@@ -81,6 +81,7 @@ class StarkExWallet /* implements IService */ {
                         "select_account":this.select_account.bind(this),
                         "set_admin_account":this.set_admin_account.bind(this),
                         "generate_stark_account_from_public_key":this.generate_stark_account_from_public_key.bind(this),
+                        "generate_stark_account_from_private_key":this.generate_stark_account_from_private_key.bind(this),
                         "get_key_material":this.get_key_material.bind(this),
                         "generate_request_hash":this.generate_request_hash.bind(this),
                         //"getTransaction":this.getTransaction.bind(this),
@@ -129,7 +130,7 @@ class StarkExWallet /* implements IService */ {
           "publicKey": args.publicKey,
         });       
         if (ethAccount.error)
-            return {"error":"got an error from the eth service looking up the publicKey :"+val.error}
+            return {"error":"got an error from the eth service looking up the publicKey :"+ethAccount.error}
         if (!ethAccount.privateKey)
             return {"error":"Internal error. Somehow do not have a private Key"}
 

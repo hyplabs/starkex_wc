@@ -1,6 +1,6 @@
 const { SignClient } = require( "@walletconnect/sign-client");
 const EthGateway = require('../services/EthGateway.js');
-const EthWallet = require('../services/EthGateway.js');
+const EthWallet = require('../services/EthWallet.js');
 const ServiceManager = require('../services/ServiceManager.js');
 
 
@@ -11,9 +11,13 @@ class WCApp{
         this.sessionApproval = undefined;
         settings = {};
         this.serviceManager = new ServiceManager();
-        this.serviceManager.registerService(new EthGateway(this.serviceManager,settings.ethProviderUrl));
-        this.serviceManager.registerService(new EthWallet(this.serviceManager,settings.ethPrivateKey));    
-        //this.serviceManager.registerService(new StarkExGateway(this.serviceManager,settings.starkProviderUrl));
+        let success = false;
+        success = this.serviceManager.registerService(new EthGateway(this.serviceManager,settings.ethProviderUrl));
+        if (success == false)
+            throw new Error('!Could not add EthGateway'); 
+        success =this.serviceManager.registerService(new EthWallet(this.serviceManager,settings.ethPrivateKey));    
+        if (success == false)
+            throw new Error('!Could not add EthWallet'); 
     }
 
     async doConnect(namespaces,projectId){
@@ -30,8 +34,6 @@ class WCApp{
 
     async listen(){
       this.signClient.on("session_request", (event) => {
-        console.log ("APP SESSION REQUEST");
-        console.log(event);
         this.signClient.respond({
                               "topic": event.topic,
                               "response":{"id":event.id,
@@ -40,6 +42,7 @@ class WCApp{
     
       });
     }
+    
     /**
      * request(method,service,params)
      * Via the WalletConnect RPC  tunnel, request a function call from a wallet.
@@ -49,7 +52,9 @@ class WCApp{
      * @return {Object}
      */ 
     async request(method,service,params){
-      const result = await this.signClient.request({
+      if(this.sessionApproval == undefined)
+          return {"error":"no Session established"}
+      let packet ={
         topic: this.sessionApproval.topic,
         chainId: "eip155:1",
         request: {
@@ -59,7 +64,8 @@ class WCApp{
           service: service,
           params: params,
         },
-      });
+      }; 
+      const result = await this.signClient.request(packet);
 
       return result;
     }

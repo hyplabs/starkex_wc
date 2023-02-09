@@ -53,7 +53,14 @@ class StarkExGateway /* implements IService */ {
      */    
     methodRoles(){
         let roles = {
-            "admin": { },
+            "admin": { 
+                "getTransaction":this.getTransaction.bind(this),
+                "sendTransaction":this.sendTransaction.bind(this),
+                "set_gateway":this.set_gateway.bind(this),
+                "getFirstUnusedTxId":this.getFirstUnusedTxId.bind(this),
+                "getTransaction":this.getTransaction.bind(this),
+            
+            },
             "user" : {
                 "getTransaction":this.getTransaction.bind(this),
                 "sendTransaction":this.sendTransaction.bind(this),
@@ -67,8 +74,11 @@ class StarkExGateway /* implements IService */ {
 
     async set_gateway(args,metadata) {
         if (args.providerUrl)
+        {
             this.settings.providerUrl = args.providerUrl;
-        return true
+            return true;
+        }
+        return false;
     }
     
     async getTransaction(args,metadata) {
