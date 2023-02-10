@@ -5,30 +5,8 @@ This repository is a part of the WalletConnect project and contains a dApp (dece
 The the SignClient is responsible for establishing a secure connection between the wallet and the dApp, and for handling the authorization of transactions and sensitive operations between the two. This ensures that the dApp can securely interact with the wallet without the need for sensitive information to be shared directly.
 
 ## Example Usage dApp 
-- run "npm run start" to boot up the dApp.
-- Head over to the wallet directory, In this repo, run "node index.js", this will start up the CLI admin interface
-- Click Connect on the dApp. When prompted, copy the deep link
-- In the cli type "auth YOUR_PASTED_AUTH_CODE" and press enter
-- You should see that your session is started
-- Type "approve" as prompted on the wallet
-
-
-**The code is organized as follows:**
-The example dApp is all in one file (App.js) for pedelogical reasons. Take what you need from this example, and you should not need to understand or explore many files to get started. To make your own dApp, you will want to mve the components/WCApp.js into your JS, or even use the relevant portions in your application.
-
-- App.js - All user commands and GUI functionality in one file. You should not need to explore many files to learn StarkEx and ETH.
-- WCApp.js - All dApp side use of WalletConnect. If you only care about WalletConnect, you can head here
-- Wallet - If you are a wallet developer:  head over to /wallet/ side and review index.js. In this file we will only consider the user experience.
-
-## Example Commands:
-The app includes two example commands: 
-(dApp only required):
-- use "Generate ETH account" - This will create a new ETH account, in an unsecure manner, in the dApp memory using ethers.js
-- use "eth.transfer"  - A toy transfer request
-
-(dApp + wallet):
-*** You will need a wallet running!!! Please run node index.js in the /wallet/ directory to start it, in a new terminal window
-- start the wallet "wallet/node index.js" *
+- dapp:run "npm run start" to boot up the dApp.
+- wallet: start the wallet "wallet/node index.js" *
 - dapp: use "Connect" to connect to your wallet
 - wallet: type "auth wc:THE_DEEP_LINK"
 - dapp: use "Generate ETH account" - This will create a new ETH account, in an unsecure manner, in the dApp memory using ethers.js
@@ -39,3 +17,12 @@ The app includes two example commands:
 - wallet: "approve" until all requests are approved
 - dapp: use "stark.sendTransaction"  - A toy sendTransaction call
 - wallet: "approve" until all requests are approved
+
+
+**The code is organized as follows:**
+The example dApp is all in one file (App.js) for pedelogical reasons. Take what you need from this example, and you should not need to understand or explore many files to get started. To make your own dApp, you will want to mve the components/WCApp.js into your JS, or even use the relevant portions in your application.
+
+- App.js - All user commands and GUI functionality in one file. You should not need to explore many files to learn StarkEx and ETH.
+- WCApp.js - All dApp side use of WalletConnect. If you only care about WalletConnect, you can head here
+- Wallet - If you are a wallet developer:  head over to /wallet/ side and review index.js. In this file we will only consider the user experience.
+
