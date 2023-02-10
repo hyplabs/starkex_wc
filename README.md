@@ -13,8 +13,8 @@ The wallet directory contains a crypto wallet solution that includes a ServiceMa
 ### mini-wallets (Services)
 Within the wallet application, there are DRIVERS and SERVICES. Each Service functions as a "mini-wallet" managing the affairs of a specific service. The project is built with extentsion in mind and it should be easy to update and swap new L2 conventions as needed. CommonJs has been used to maximize compatibility with both back-end and desktop deployments, so it may be important to keep this in mind when extending.
 - EthWalletGateway - This is an Ethereum Wallet toy example that can sign a request.
-- StarkExWallet (in progress) - This is a StarkEx service that can manage Spot requests
-- StarkExGateway (in progress) - This is a StarkEx service that can manage Spot requests
+- StarkExWallet - This is a StarkEx service that can manage Spot requests
+- StarkExGateway- This is a StarkEx service that can manage Spot requests
 - StarkExPerpetualGateway (TBD) - This is a StarkEx perpetual service that can manage Perpetual requests
 - StarkCairo (TBD) - This is a service that can manage a Ciaro deployment
 
