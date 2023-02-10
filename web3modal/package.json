@@ -12,9 +12,13 @@
     "@web3modal/react": "^2.0.0-beta.10",
     "@web3modal/standalone": "^2.0.0-rc.1",
     "assert": "^2.0.0",
+    "bip39": "^3.0.4",
+    "create-hash": "^1.2.0",
     "ethers": "^5.7.2",
     "install": "^0.13.0",
     "npm": "^9.4.2",
+    "pbkdf2": "^3.1.2",
+    "randombytes": "^2.1.0",
     "react": "^18.2.0",
     "react-bootstrap": "^2.7.0",
     "react-dom": "^18.2.0",
@@ -25,7 +29,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "rm -rf node_modules/.cache/; PORT=5000 react-scripts start",
+    "start": "rm -rf node_modules/.cache/; PORT=5000 react-scripts start --config-overrides ./config-overrides.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

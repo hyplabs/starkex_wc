@@ -157,42 +157,7 @@ doGenerateAccount = async (app,admin) => {
 
       return results;
   }  
-/*
-Connect Wallet:
----------------------------
-[ ] - End-user uses a StarkEx App and presses “Connect Wallet”
-[ ] - Pop-up window with optional wallets and WalletConnect
-[ ] - Presses “WalletConnect”
-[ ] - Pop-up window with QR code
-[ ] - End user scans code with a WalletConnect compatible wallet, or enters the deep_link (in the case of a Command Line Interface)
 
-Get public key:
----------------------------
-[ ] - App sends to wallet Get_public_key
-[ ] - Wallet derives Stark pair keys from mnemonic (BIP32, EIP-2645)
-[ ] - Wallet send the app the public Stark key
-
-Deposit (Spot):
----------------------------
-[ ] - End user presses “deposit” on app
-[ ] - App sends an on-chain deposit request to an Ethereum wallet (which includes Stark_public_key, asset_type, vault_id,quantized_amount). The deposit operation supports deposits of ETH, ERC-20, ERC-721, and ERC-1155.
-[ ] - App sends off-chain deposit to StarkEx service
-
-
-Transfer (Spot):
----------------------------
-[ ] - End user request to transfer funds (presses ‘transfer’ in app)
-[ ] - App sends Stark wallet sign_message request for transaction type transfer (if it’s StarkEx v1) or type transaction_with_fees (for Starkex version 4.5)
-[ ] - Wallet parse message payload and present to end-user to sign
-[ ] - User signs message with Stark key corresponding to this specific app
-[ ] - App sends a transfer request transaction to the StarkEx gateway, using the add_transaction API with the TransferRequest transaction type.
-
-Docs:
-[ ] - Adding a Service to the dApp
-[ ] - Adding a Service to the wallet
-[ ] - I can include documentation / instructions about Adding new transactions this process as well (added to by documentation tasks list)
-
-*/
 
 
   test('Test ServiceManager registration with ethers.js long version', async () => {
@@ -306,6 +271,5 @@ Docs:
     expect(response).toHaveProperty('getFirstUnusedTxId', expect.any(Number));
     expect(response).toHaveProperty('sendTransaction.txId', expect.any(Number));
     expect(response).toHaveProperty('sendTransaction.code', 'TRANSACTION_PENDING');
-
       
   });

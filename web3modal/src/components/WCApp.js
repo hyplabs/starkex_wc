@@ -79,7 +79,10 @@ class WCApp{
      * @return {Object}
      */ 
     async run(method,service,params){
-      return this.serviceManager.run(service,"admin",method,params)
+        //console.log(this.serviceManager);
+        // console.log(this.serviceManager);
+        
+        return this.serviceManager.run(service,"admin",method,params)
     }    
 
 } 

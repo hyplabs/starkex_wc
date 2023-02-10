@@ -16,10 +16,11 @@ class App extends Component {
                           'expose_account',
                           'sendTransaction',
                           'sign_message',
+                          'set_gateway',
                           'getFirstUnusedTxId',
                           'set_admin_account',
                           'select_account',
-                          'generate_stark_account_from_public_key',
+                          'generate_stark_account_from_private_key',
                           'signTransaction'], 
                 chains: ['eip155:1'], 
                 events: ['accountsChanged'] }
@@ -61,16 +62,19 @@ class App extends Component {
     results.ethProvider =  "https://goerli.infura.io/v3/37519f5fe2fb4d2cac2711a66aa06514";
     results.starkProvider =  "https://gw.playground-v2.starkex.co";
     
-    //await this.request("set_admin_account","eth",   {"providerUrl":results.ethProvider});
+    await this.run("set_gateway","ethgate",   {"providerUrl":results.ethProvider});
     //await this.request("set_admin_account", "starkex", {"providerUrl":results.starkProvider});
 
     results.ethResponse = await this.run("generate_account","eth",{});
     
     // (2) Eth user selection
     results.ethAccount  = await this.run("select_account","eth",{publicKey: results.ethResponse.publicKey}); 
+    
+    // (3) Eth expose details
+    results.ethPrivateAccount  = await this.run("expose_account","eth",{publicKey: results.ethResponse.publicKey}); 
 
     // (3) StarkEx key Generation.
-    results.starkResponse = await this.request("generate_stark_account_from_public_key","starkex",{'publicKey':results.ethResponse.publicKey});
+    results.starkResponse = await this.request("generate_stark_account_from_private_key","starkex",{'privateKey':results.ethPrivateAccount.privateKey});
     
     // (4) Stark user selection.
     results.starkAccount = await this.request("select_account","starkex",{starkKey:results.starkResponse.starkKey});
@@ -112,10 +116,10 @@ class App extends Component {
   
     // (1.a) Sign a transaction moving L1 to the starkEx depost function
     let signedEthTransaction = await this.run("signTransaction","eth",args);
-    console.log("signedEthTransaction");
-    console.log(signedEthTransaction);    
+    //console.log("signedEthTransaction");
+    //console.log(signedEthTransaction);    
     args = {"hex":signedEthTransaction};
-    let sentEthTransaction = await this.run("sendTransaction","eth",args);
+    let sentEthTransaction = await this.run("sendTransaction","ethgate",args);
     return {signedEthTransaction, sentEthTransaction};
 
   }
@@ -133,9 +137,9 @@ class App extends Component {
       receiverVaultId: 1,
       expirationTimestamp: 438953});
 
-    results['getFirstUnusedTxId']  = await this.request("getFirstUnusedTxId","starkex", {});
+    results['getFirstUnusedTxId']  = await this.request("getFirstUnusedTxId","starkexgate", {});
 
-    results['sendTransaction'] = await this.request( "sendTransaction", "starkex", 
+    results['sendTransaction'] = await this.request( "sendTransaction", "starkexgate", 
       {
       "type": "DepositRequest",
       "tokenId": '0x0b333e3142fe16b78628f19bb15afddaef437e72d6d7f5c6c20c6801a27fba6',
