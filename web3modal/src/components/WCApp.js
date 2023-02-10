@@ -1,9 +1,23 @@
 const { SignClient } = require( "@walletconnect/sign-client");
+const EthGateway = require('../services/EthGateway.js');
+const EthWallet = require('../services/EthWallet.js');
+const ServiceManager = require('../services/ServiceManager.js');
+
+
 class WCApp{
-    constructor()
+    constructor(settings)
     {
         this.signClient = undefined; 
         this.sessionApproval = undefined;
+        settings = {};
+        this.serviceManager = new ServiceManager();
+        let success = false;
+        success = this.serviceManager.registerService(new EthGateway(this.serviceManager,settings.ethProviderUrl));
+        if (success == false)
+            throw new Error('!Could not add EthGateway'); 
+        success =this.serviceManager.registerService(new EthWallet(this.serviceManager,settings.ethPrivateKey));    
+        if (success == false)
+            throw new Error('!Could not add EthWallet'); 
     }
 
     async doConnect(namespaces,projectId){
@@ -20,8 +34,6 @@ class WCApp{
 
     async listen(){
       this.signClient.on("session_request", (event) => {
-        console.log ("APP SESSION REQUEST");
-        console.log(event);
         this.signClient.respond({
                               "topic": event.topic,
                               "response":{"id":event.id,
@@ -30,9 +42,19 @@ class WCApp{
     
       });
     }
-
+    
+    /**
+     * request(method,service,params)
+     * Via the WalletConnect RPC  tunnel, request a function call from a wallet.
+     * @param {Object} method the name of the method to be invoked 
+     * @param {Object} service the service in the wallet that contains the method
+     * @param {Object} params any relevant parameters
+     * @return {Object}
+     */ 
     async request(method,service,params){
-      const result = await this.signClient.request({
+      if(this.sessionApproval == undefined)
+          return {"error":"no Session established"}
+      let packet ={
         topic: this.sessionApproval.topic,
         chainId: "eip155:1",
         request: {
@@ -42,16 +64,26 @@ class WCApp{
           service: service,
           params: params,
         },
-      });
+      }; 
+      const result = await this.signClient.request(packet);
 
-      //console.log("SIGN RESP")
-      ///console.log(result);      
-      //console.log("Dapp sent message");
       return result;
     }
 
-
+    /**
+     * run(method,service,params)
+     * Locally, in the current set of dApp services, run some kind of method.
+     * @param {Object} method the name of the method to be invoked 
+     * @param {Object} service the service in the wallet that contains the method
+     * @param {Object} params any relevant parameters
+     * @return {Object}
+     */ 
+    async run(method,service,params){
+        //console.log(this.serviceManager);
+        // console.log(this.serviceManager);
+        
+        return this.serviceManager.run(service,"admin",method,params)
+    }    
 
 } 
-
 module.exports = WCApp;

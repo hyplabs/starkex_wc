@@ -59,8 +59,6 @@ class ServiceManager {
      */    
     emit(event)
     {
-        // This is not a production grade event system!!!
-        // This function could be expanded to route events intelligently, considering roles and functions. All we do now, is broadcast to any bound handle.
         this.admin_handles.forEach((func)=>{
             func(event);
         })        
@@ -111,7 +109,6 @@ class ServiceManager {
      * @return {Object}
      */        
     run(service,role,command,args){
-
         if(!(Object.keys(this.services).includes(service)))
             return {"error":"Do not have a service '"+service+"' registered."}
         if(!(['admin','user'].includes(role)))
@@ -124,11 +121,7 @@ class ServiceManager {
             return {"error":"Do not have a role '"+role+"'  supported in the Service."}        
 
         if(!(Object.keys(roleCommandsMap[role]).includes(command)))
-        {
-            console.log(role);
-            console.log(Object.keys(roleCommandsMap[role]));
             return {"error":"Command '"+command+"' not supported in the Service."}        
-        }
         let func = roleCommandsMap[role][command];
         
         let event = {...args};
@@ -136,10 +129,8 @@ class ServiceManager {
         event['service'] = service;
         event['command'] = command;
         event['role'] = role;
-        //event['example_metadata']= 'ran command';
-        //this.emit(service, event); // emit an event, noting a function call
         return func(args,event);
     }    
 }
 
-module.exports = ServiceManager;
+module.exports=  ServiceManager;

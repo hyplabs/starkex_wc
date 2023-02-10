@@ -11,22 +11,17 @@
  * --- Service: EthWalletGateway - Create an ETH user
  * 
  */
-// TODO push to more general location
-
-class Wallet{
+class Wallet
+{ 
   constructor(settings){
     this.interfaces = {}
     const ServiceManager = require('./services/ServiceManager.js');
-    const EthWalletGateway = require('./services/EthWalletGateway.js');
-    const StarkExWalletGateway = require('./services/StarkExWalletGateway.js');
+    const StarkExWallet = require('./services/StarkExWallet.js');
+    const StarkExGateway = require('./services/StarkExGateway.js');
 
     this.serviceManager = new ServiceManager();
-    this.serviceManager.registerService(new EthWalletGateway(this.serviceManager,
-                                                            settings.ethPrivateKey,
-                                                            settings.ethProviderUrl));
-    this.serviceManager.registerService(new StarkExWalletGateway(this.serviceManager,
-                                                            settings.starkPrivateKey,
-                                                            settings.starkProviderUrl));
+    this.serviceManager.registerService(new StarkExGateway(this.serviceManager,settings.starkProviderUrl));
+    this.serviceManager.registerService(new StarkExWallet(this.serviceManager,settings.starkPrivateKey));
 
     this.system_topics = {};
 
@@ -39,24 +34,5 @@ class Wallet{
     this.doMethodBinding("wc",this.interfaces['wc']);
   }
 
-  /**
-   *  doMethodBinding
-   *  Unrap the component instance and place driver methods into the parent class dynamically
-   */
-  doMethodBinding(prefix,sourceInstance){
-    let prototype = Object.getPrototypeOf(sourceInstance);
-    let methods = Object.getOwnPropertyNames(prototype);
-    methods.forEach(method => {
-        if(typeof prototype[method] === "function" && method != "constructor" ){
-           //console.log(prefix+"_"+method + " bound");
-            Object.defineProperty(Wallet.prototype, prefix+"_"+method, {
-                get: function() {
-                    return prototype[method].bind(sourceInstance);
-                }
-            });
-        }
-    });
-  }
 }
-
 module.exports = Wallet;

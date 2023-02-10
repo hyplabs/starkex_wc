@@ -1,5 +1,34 @@
+const { JSDOM } = require('jsdom');
+const { window } = new JSDOM('', {
+  url: "http://localhost",
+  resources: "usable",
+  runScripts: "dangerously",
+  pretendToBeVisual: true,
+});
+ 
+global.window = window;
+global.document = window.document;
+global.navigator = window.navigator;
+global.HTMLElement = window.HTMLElement;
+global.XMLHttpRequest = window.XMLHttpRequest;
+global.Event = window.Event;
+global.CustomEvent = window.CustomEvent;
+
+Object.defineProperties(global.navigator, {
+  userAgent: { value: "jsdom" },
+  platform: { value: "jsdom" },
+});
+
+delete global.window.document.createRange;
+delete global.window.document.getSelection;
+delete global.window.localStorage; 
+
+
 const readline = require('readline');
 const  Wallet  = require('./wallet.js');
+
+let g_autoApprove = false;
+
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -14,6 +43,9 @@ rl.on('line', async (input) => {
   if (command === 'echo') {
     console.log(`Echoing: ${args.join(' ')}`);
 
+  } else if (command === 'auto_approve') {
+    g_autoApprove = true;
+    console.log("\nSystem will now approve all requests");
   
   } else if (command === 'list') {
     console.log(system_topics);
@@ -49,11 +81,23 @@ async function adminRejectAll(){
 }
 
 async function adminRequest(event){
-  console.log("New Request from dApp. Type 'approve' to approve it! Type 'reject' to reject it.");
-  console.log("-------------------");
-  console.log(JSON.stringify(event));
-  console.log("-------------------");
-  approvals.push(event);
+  
+  if (g_autoApprove == true)
+  {
+      console.log("AUTOAPPROVED:");
+      console.log("-------------------");
+      console.log(JSON.stringify(event));
+      console.log("-------------------");
+      adminRespond(event);
+  }
+  else
+  {
+      console.log("New Request from dApp. Type 'approve' to approve it!");
+      console.log("-------------------");
+      console.log(JSON.stringify(event));
+      console.log("-------------------");
+      approvals.push(event);
+  }
 }
 
 async function adminRespond(event){
@@ -81,8 +125,10 @@ let main = async () =>{
   let ethPrivateKey = undefined;
   let ethProviderUrl = undefined;
   admin = new Wallet({approvalMethod: adminRequest, // This is the handler that is involked when a new event is triggered by a dApp
-                    ethPrvateKey: ethPrivateKey, // This is the ETH private key we will use internall to represent the sessioon
-                    ethProviderUrl: ethProviderUrl}); // This is the RPC target for the Eth Node we wish to speak with
+                        'ethPrivateKey':"0x8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f", // TESTING. NOT A SECURE KEY
+                            'ethProviderUrl':undefined,
+                            'starkPrivateKey':undefined,
+                            'srarkProviderUrl':undefined}); // This is the RPC target for the Eth Node we wish to speak with
   let walletWCConfig = {
     projectId: "b700887b888adad39517894fc9ab22e1",
     relayUrl: "wss://relay.walletconnect.com",
@@ -94,13 +140,13 @@ let main = async () =>{
     },
   }    
   await admin.wc_listen(walletWCConfig);   
-  currentAccount = await admin.serviceManager.run("eth", "admin", "generate_account", {});
-  await admin.serviceManager.run("eth", 
-                                  "admin", 
-                                  "set_admin_account", {"privateKey":currentAccount.privateKey,
-                                                        "providerUrl":undefined});
-  
-  console.log(JSON.stringify(currentAccount));
+  await admin.serviceManager.run("starkexgate", "admin", "set_gateway", {"providerUrl":"https://gw.playground-v2.starkex.co"});
+
+  console.log ("Connected:");  
+  console.log (await admin.serviceManager.run("starkexgate", "admin", "getFirstUnusedTxId", {}))
+
+
+  //console.log(JSON.stringify(currentAccount));
   console.log("begin by writing 'auth PASTE_YOUR_DEEP_LINK'");   
   console.log("After session_approval, you may see requests for review. With these requests you can respond with 'approve' and 'reject'.");   
   rl.prompt();

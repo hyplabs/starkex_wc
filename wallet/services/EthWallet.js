@@ -3,26 +3,25 @@ const {IService} = require('./ServiceManager.js');
 const crypto = require('crypto');
 const BIP39 = require('bip39');
 const ethUtil = require('ethereumjs-util');
-const { BigNumber } = require('ethers');
+const { BigNumber } = require('ethers'); 
 
 /**
  * EthWalletGateway: IService
  * An example implementation of a wallet + gateway combination. Partial implementation meant to be instuctive in nature.
  */
-class EthWalletGateway /* implements IService */ {
+class EthWallet /* implements IService */ {
     /**
      * Create a new ServiceManager instance.
      * @param {Object} serviceManager our Service Manager
      * @constructor
      */    
-    constructor(serviceManager,privateKey,providerUrl) {
+    constructor(serviceManager,privateKey) {
         this.settings = {}
         this.settings.accounts = {}
         this.settings.selectedAccount = undefined
         this.serviceManager = serviceManager;
-        if (privateKey || providerUrl)
-            this.set_admin_account({'privateKey':privateKey,
-                                    'providerUrl':providerUrl},{})
+        if (privateKey)
+            this.set_admin_account({'privateKey':privateKey},{})
     }
     
     /**
@@ -52,15 +51,13 @@ class EthWalletGateway /* implements IService */ {
      */    
     methodRoles(){
         return {
-            "admin": {"generate_account":this.generate_account.bind(this),
+            "admin": {
+                        "generate_account":this.generate_account.bind(this),
                         "derive_account_from_private_key":this.derive_account_from_private_key.bind(this),
                         "expose_account":this.expose_account.bind(this),
                         "signTransaction":this.signTransaction.bind(this),
                         "set_admin_account":this.set_admin_account.bind(this),
                         "select_account":this.select_account.bind(this),
-
-                        //TODO "sendSignedTransaction":this.sendSignedTransaction.bind(this),
-                        //TODO "getTransactionStatus":this.getTransactionStatus.bind(this)
                      },
             "user" : {}
         };
@@ -84,7 +81,7 @@ class EthWalletGateway /* implements IService */ {
             publicKey:publicKey.toString('hex'),
             privateKey:privateKey.toString('hex')}
         
-        this.settings.accounts[acc.publicKey] = acc;
+        this.settings.accounts[acc.publicKey] = acc; 
         return {publicKey:acc.publicKey}
         
     }
@@ -103,7 +100,7 @@ class EthWalletGateway /* implements IService */ {
      */        
     select_account(args,metadata) {
         if (Object.keys(this.settings.accounts).includes(args.publicKey))
-        {
+        { 
             this.settings.selectedAccount = this.settings.accounts[args.publicKey];
             return args.publicKey;
         }
@@ -155,8 +152,6 @@ class EthWalletGateway /* implements IService */ {
             this.settings.selectedAccount = account;
             this.settings.accounts[account.publicKey] = account;
         }
-        if (args.providerUrl)
-            this.settings.providerUrl = args.providerUrl;
         return true
     }
 
@@ -181,53 +176,20 @@ class EthWalletGateway /* implements IService */ {
             wallet = new ethers.Wallet(args.privateKey);
         }
         
-        let nonce = "12345";
-        if (this.settings.providerUrl != undefined)
-        {
-            const provider = new ethers.providers.JsonRpcProvider(this.settings.providerUrl);        
-            let nonce = await provider.getTransactionCount(wallet.address);
-        }
         const transaction = {
             to: args['to'],
             value: ethers.utils.parseEther(args['value']),
             gasLimit: args['gasLimit'],
             maxPriorityFeePerGas: ethers.utils.parseUnits("5", "gwei"),
             maxFeePerGas: ethers.utils.parseUnits("20", "gwei"),
-            nonce: nonce,
+            nonce: args['nonce'],
             type: args['type'],
             chainId: args['chainId'],
-        };       
+        };
 
         const rawTransaction = await wallet.signTransaction(transaction);    
         return rawTransaction;
     }
-    /*
-
-
-    TODO 
-    - Finish these off to enjoy a team victory lap
-    - Having a full end to end L1 + L2 solution is
-    async sendSignedTransaction(args,metadata) {
-        // metadata -- unused
-        let signedTransaction = args["signedTransaction"];
-    
-        let provider = new ethers.providers.JsonRpcProvider();
-        let transaction = await provider.sendTransaction(signedTransaction);
-        let transactionId = transaction.hash;
-        return transactionId;
-    }
-    
-    async getTransactionStatus(args,metadata) {
-        // metadata -- unused
-        let transactionId = args["transactionId"];
-    
-        let provider = new ethers.providers.JsonRpcProvider();
-        let transaction = await provider.getTransaction(transactionId);
-        let status = transaction.blockNumber != null ? "confirmed" : "pending";
-        return status;
-    }
-
-    */
 
 } 
-module.exports = EthWalletGateway;
+module.exports = EthWallet;
