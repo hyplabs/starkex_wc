@@ -11,8 +11,6 @@
  * --- Service: EthWalletGateway - Create an ETH user
  * 
  */
-// TODO push to more general location
-
 class Wallet
 { 
   constructor(settings){
@@ -36,24 +34,5 @@ class Wallet
     this.doMethodBinding("wc",this.interfaces['wc']);
   }
 
-  /**
-   *  doMethodBinding
-   *  Unrap the component instance and place driver methods into the parent class dynamically
-   */
-  doMethodBinding(prefix,sourceInstance){
-    let prototype = Object.getPrototypeOf(sourceInstance);
-    let methods = Object.getOwnPropertyNames(prototype);
-    methods.forEach(method => {
-        if(typeof prototype[method] === "function" && method != "constructor" ){
-           //console.log(prefix+"_"+method + " bound");
-            Object.defineProperty(Wallet.prototype, prefix+"_"+method, {
-                get: function() {
-                    return prototype[method].bind(sourceInstance);
-                }
-            });
-        }
-    });
-  }
 }
-
 module.exports = Wallet;

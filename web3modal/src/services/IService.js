@@ -1,7 +1,7 @@
-
 /**
  * IService Interface (class)
  * Simply cut and paste IService into ./services, and customize, to add a new service into the ServiceManager
+ * THIS IS A TEMPLATE.
  */
 class IService {
     /**
@@ -81,5 +81,4 @@ class IService {
     }    
 } 
 
-//export default IService;
 module.exports = IService;

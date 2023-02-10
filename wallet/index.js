@@ -1,4 +1,3 @@
-
 const { JSDOM } = require('jsdom');
 const { window } = new JSDOM('', {
   url: "http://localhost",
@@ -7,9 +6,6 @@ const { window } = new JSDOM('', {
   pretendToBeVisual: true,
 });
  
-// Remove or disable Node.js-specific features
-// This partly simulates a browser environment, so we can 
-// ensure the application can run in a browser as is, if needed
 global.window = window;
 global.document = window.document;
 global.navigator = window.navigator;
@@ -27,11 +23,12 @@ delete global.window.document.createRange;
 delete global.window.document.getSelection;
 delete global.window.localStorage; 
 
-///
-////////////////////////////////////////////
-///
+
 const readline = require('readline');
 const  Wallet  = require('./wallet.js');
+
+let g_autoApprove = false;
+
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -46,6 +43,9 @@ rl.on('line', async (input) => {
   if (command === 'echo') {
     console.log(`Echoing: ${args.join(' ')}`);
 
+  } else if (command === 'auto_approve') {
+    g_autoApprove = true;
+    console.log("\nSystem will now approve all requests");
   
   } else if (command === 'list') {
     console.log(system_topics);
@@ -81,11 +81,23 @@ async function adminRejectAll(){
 }
 
 async function adminRequest(event){
-  console.log("New Request from dApp. Type 'approve' to approve it! Type 'reject' to reject it.");
-  console.log("-------------------");
-  console.log(JSON.stringify(event));
-  console.log("-------------------");
-  approvals.push(event);
+  
+  if (g_autoApprove == true)
+  {
+      console.log("AUTOAPPROVED:");
+      console.log("-------------------");
+      console.log(JSON.stringify(event));
+      console.log("-------------------");
+      adminRespond(event);
+  }
+  else
+  {
+      console.log("New Request from dApp. Type 'approve' to approve it!");
+      console.log("-------------------");
+      console.log(JSON.stringify(event));
+      console.log("-------------------");
+      approvals.push(event);
+  }
 }
 
 async function adminRespond(event){

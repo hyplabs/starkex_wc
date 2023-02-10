@@ -1,13 +1,5 @@
-/*
-const ethers = require( 'ethers');
-const {IService} = require('./ServiceManager.js');
-const BIP39 = require('bip39');
-const { BigNumber } = require( 'ethers');
-*/
-
 const ethers = require('ethers');
 const { IService } = require('./ServiceManager.js');
-//const EthMnemonic = require('js-eth-mnemonic');
 const ethUtil = require('ethereumjs-util');
 const { BigNumber } = require('ethers');
 
@@ -74,26 +66,7 @@ class EthWallet /* implements IService */ {
      * @return {Object}
      */        
     async generate_account(args,metadata) {
-        /*
-        console.log( BIP39)
-        console.log( BIP39.generateMnemonic)
-        const mnemonic = BIP39.generateMnemonic();
-        let buf = await BIP39.mnemonicToSeed(mnemonic);    
-        const privateKey = ethUtil.keccak(buf);
-        const publicKey = ethUtil.privateToPublic(privateKey);
-        const pubKeyHash = ethUtil.keccak(publicKey);    
-        const address = ethUtil.publicToAddress(publicKey).toString('hex');
-
-        let acc= {
-            mnemonic:mnemonic,
-            address:address,
-            publicKey:publicKey.toString('hex'),
-            privateKey:privateKey.toString('hex')}
-        
-        this.settings.accounts[acc.publicKey] = acc; 
-        return {publicKey:acc.publicKey}*/
       const wallet = ethers.Wallet.createRandom()
-      //const wallet = ethers.Wallet.fromMnemonic(mnemonic);
 
       let acc = {
         mnemonic: wallet.mnemonic.phrase,
@@ -214,5 +187,4 @@ class EthWallet /* implements IService */ {
 
 } 
 
-//export default EthWallet;
 module.exports = EthWallet;

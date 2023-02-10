@@ -1,11 +1,3 @@
-/*
-import * as  ethers from 'ethers';
-import {IService} from './ServiceManager.js';
-//import * as crypto from 'crypto';
-import * as BIP39 from 'bip39';
-import * as ethUtil from 'ethereumjs-util';
-import { BigNumber } from 'ethers';
-*/
 const ethers = require( 'ethers');
 const {IService} = require('./ServiceManager.js');
 const BIP39 = require('bip39');
@@ -75,24 +67,20 @@ class EthGateway /* implements IService */ {
      * @return {Object}
      */        
     async sendTransaction(args,metadata) {
-        // metadata -- unused
         let signedTransaction = args["hex"];
         if (this.settings.providerUrl == undefined)
         {
             return {"error":"There is no provider attached to the ETH wallet. Please use set_admin_account({'providerUrl':URL}) to set one up."}
         }
         try {
-            console.log("In Try");
             let provider = new ethers.providers.JsonRpcProvider(this.settings.providerUrl);
             let transaction = await provider.sendTransaction(signedTransaction);
             let transactionId = transaction.hash;
-            console.log("In Finishing Try");
             return { transaction};
         } catch (error) {
-            console.log("Catching");
             return {"error": error.message};
         }
     }
 } 
-//export default EthGateway;
+
 module.exports = EthGateway;

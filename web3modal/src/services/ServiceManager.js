@@ -59,8 +59,6 @@ class ServiceManager {
      */    
     emit(event)
     {
-        // This is not a production grade event system!!!
-        // This function could be expanded to route events intelligently, considering roles and functions. All we do now, is broadcast to any bound handle.
         this.admin_handles.forEach((func)=>{
             func(event);
         })        
@@ -131,11 +129,8 @@ class ServiceManager {
         event['service'] = service;
         event['command'] = command;
         event['role'] = role;
-        //event['example_metadata']= 'ran command';
-        //this.emit(service, event); // emit an event, noting a function call
         return func(args,event);
     }    
 }
 
-//export default ServiceManager;
 module.exports=  ServiceManager;
