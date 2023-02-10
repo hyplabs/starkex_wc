@@ -15,8 +15,6 @@ Within the wallet application, there are DRIVERS and SERVICES. Each Service func
 - EthWalletGateway - This is an Ethereum Wallet toy example that can sign a request.
 - StarkExWallet - This is a StarkEx service that can manage Spot requests
 - StarkExGateway- This is a StarkEx service that can manage Spot requests
-- StarkExPerpetualGateway (TBD) - This is a StarkEx perpetual service that can manage Perpetual requests
-- StarkCairo (TBD) - This is a service that can manage a Ciaro deployment
 
 
 # testing
