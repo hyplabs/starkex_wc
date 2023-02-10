@@ -4,15 +4,13 @@ This repository is a part of the WalletConnect project and contains a dApp (dece
 
 The the SignClient is responsible for establishing a secure connection between the wallet and the dApp, and for handling the authorization of transactions and sensitive operations between the two. This ensures that the dApp can securely interact with the wallet without the need for sensitive information to be shared directly.
 
-## Example Usage dApp (IN ACTIVE DEVELOPMENT)
-- (IN ACTIVE DEVELOPMENT)
-- We uss WalletConnect, so you will need to run "npm start" to boot up the dApp.
-- Head over to the wallet directory, In this repo, run "node index.js", this will (right now) start up the CLI admin interface
+## Example Usage dApp 
+- run "npm run start" to boot up the dApp.
+- Head over to the wallet directory, In this repo, run "node index.js", this will start up the CLI admin interface
 - Click Connect on the dApp. When prompted, copy the deep link
 - In the cli type "auth YOUR_PASTED_AUTH_CODE" and press enter
 - You should see that your session is started
-- On the dApp, you should see that the message is gone 
-
+- Type "approve" as prompted on the wallet
 
 
 **The code is organized as follows:**
