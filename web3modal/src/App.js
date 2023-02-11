@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { Navbar, Nav, Form, FormControl, Button,  } from 'react-bootstrap';
 import { Container, Row, Col } from 'react-bootstrap';
-import MainComponent from './components/MainComponent';
 import { Web3Modal } from '@web3modal/standalone'
 const WCApp = require(  './components/WCApp.js'); 
 

@@ -33,6 +33,24 @@ class Wallet
     this.interfaces['wc'] = new WCDriver(this.serviceManager);
     this.doMethodBinding("wc",this.interfaces['wc']);
   }
-
+    
+  /**
+   *  doMethodBinding
+   *  Unrap the component instance and place driver methods into the parent class dynamically
+   */
+  doMethodBinding(prefix,sourceInstance){
+    let prototype = Object.getPrototypeOf(sourceInstance);
+    let methods = Object.getOwnPropertyNames(prototype);
+    methods.forEach(method => {
+        if(typeof prototype[method] === "function" && method != "constructor" ){
+           //console.log(prefix+"_"+method + " bound");
+            Object.defineProperty(Wallet.prototype, prefix+"_"+method, {
+                get: function() {
+                    return prototype[method].bind(sourceInstance);
+                }
+            });
+        }
+    });
+  }
 }
 module.exports = Wallet;
