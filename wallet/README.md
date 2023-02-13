@@ -23,7 +23,6 @@ git clone https://github.com/THE_FINAL_REPO_LOCATION
 - testing "npm run test", These tests use the IService classes to test the wallets
 
 ## Example Usage dApp + CLI
-- (IN ACTIVE DEVELOPMENT)
 - Head over to the dApp example. It uses WalletConnect, so you will need to run "npm start" to boot up the dApp.
 - In this repo, run "node index.js", this will (right now) start up the CLI admin interface
 - Click Connect on the dApp. When prompted, copy the deep link
