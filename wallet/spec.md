@@ -47,3 +47,15 @@ Returns a promise that resolves to a string representing the generated hash.
     * `sourceVaultId: number` - The vault ID of the fee payer.
     * `feeLimit: number` - The maximum fee allowed.
 
+# sign_message(args: Object) => Object
+Returns a promise that resolves to an object with the message signature (`r` and `s` values) as properties.
+
+* `args: Object`
+  * `hash: string?` - The hash of the message to sign. If not provided, the function will call generate_request_hash with `args` to generate the hash.
+
+# get_key_material(args: Object) => Object
+Returns a promise that resolves to an object with the deterministic random number generated from the key material as a property.
+
+* `args: Object`
+  * `seed: string?` - The seed to use when generating the key material. If not provided, an empty string is used.
+  * `number: number?` - The number to use when generating the key material. If not provided, 0 is used.
