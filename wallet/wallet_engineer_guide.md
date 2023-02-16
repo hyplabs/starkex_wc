@@ -147,10 +147,11 @@ this.responder = async (args,metadata) => {
           event.func_resolve("some_hard_coded_result"); // return the result
           return;
       }
-      //
-      // c.1, c.2, c.3 all describe different approval schemes.
-      //
-      
+```
+3. c.1, c.2, c.3 all describe different approval schemes.
+
+    1. (c.1) invoke
+```      
       ////////////
       // (c.1) you may run invoke the request right away
       let resp = this.serviceManager.run(
@@ -159,6 +160,9 @@ this.responder = async (args,metadata) => {
               event.command,
               event.args);
       event.func_resolve(resp); // return the result
+```
+    2. (c.2) await approval
+```
       
       ////////////
       // (c.2) you may otherwise pass along the event for approval, and then process the request
@@ -177,6 +181,10 @@ this.responder = async (args,metadata) => {
           event.func_reject("Approval Rejected"); // return the result           
       }
       
+```
+    3. (c.2) delegate
+
+```
       
       ////////////
       // (c.3) you can also simply pass on the approval process, and delegate the above details.
