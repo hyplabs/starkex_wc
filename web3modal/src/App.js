@@ -211,7 +211,7 @@ class App extends Component {
 
   doStarkDeposit = async () => {
 
-    alert ("Soon I will do a full Stark transfer!")
+    alert ("Soon I will do a full Stark deposit!")
       
   }
 

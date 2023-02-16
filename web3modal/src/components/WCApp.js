@@ -78,10 +78,7 @@ class WCApp{
      * @param {Object} params any relevant parameters
      * @return {Object}
      */ 
-    async run(method,service,params){
-        //console.log(this.serviceManager);
-        // console.log(this.serviceManager);
-        
+    async run(method,service,params){        
         return this.serviceManager.run(service,"admin",method,params)
     }    
 
