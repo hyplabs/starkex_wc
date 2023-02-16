@@ -5,8 +5,8 @@ This is your guide to developing and launching your own StarkEx wallet. If you a
 ## 0 Testing
 There are two forms of testing. Internal, and External.
 
-*Internal*: from the /wallet/ directory, you can run "npm run test" and this will test the wallet. You can also open up /wallet/tests, to inspect basic line by line usage of the wallet. This test case is similar to what you may do if you are adminstering the wallet locally, on a server, or directly on a wallet-user's computer.
-*External*: from the / (root) directory, you can run "npm run test" and this will test the end to end system via WalletConnect. You can also open up /tests folder, to inspect External use, line by line. This test case is similar to what an end-user may experience.
+1. *Internal*: from the /wallet/ directory, you can run "npm run test" and this will test the wallet. You can also open up /wallet/tests, to inspect basic line by line usage of the wallet. This test case is similar to what you may do if you are adminstering the wallet locally, on a server, or directly on a wallet-user's computer.
+2. *External*: from the / (root) directory, you can run "npm run test" and this will test the end to end system via WalletConnect. You can also open up /tests folder, to inspect External use, line by line. This test case is similar to what an end-user may experience.
 
 If you are doign Test Driven Development, it is possible to extend these use cases with additional features, then to consult the arcitecture diagram to look for development or extension oppourtunities. 
 
@@ -64,10 +64,10 @@ If you would like to extend or create your own StarkEx wallet, this check list w
 - run "npm run test" from the project root to test the system is  operating properly. 
 
 **1- Beginner:Adding your own StarkEx Wallet Methods**
-It may be the case that you want a new method to derive a StarkEx wallet, or you want to enforce a certain kind of account. In this case open wallet/services/StarkExWallet.js, and add the functionality you would like. 
+1. It may be the case that you want a new method to derive a StarkEx wallet, or you want to enforce a certain kind of account. In this case open wallet/services/StarkExWallet.js, and add the functionality you would like. 
 
 **2- Beginner:Adding your own Service**
-you may have a service, such as a database, app settings, or library, you want to provide to your wallet. To add in a service you will need to:
+1. you may have a service, such as a database, app settings, or library, you want to provide to your wallet. To add in a service you will need to:
 1. Create your new service file wallet/services/NEW_SERVICE.js. To understand structure, you may inspect wallet/services/IService.js
 2. In /wallet/wallet.js, you will want to register a new service by calling registerService.
 3. You will want to edit /tests/full.js, and add in a test case to run your new service methods.
@@ -113,7 +113,7 @@ you may have a service, such as a database, app settings, or library, you want t
 2. It is possible to request, from one service, the operations of another registered service. This pattern is reccomended when you believe a secondary service should remain independent. An example may be an encrypted database, which may be upgraded. You may register this service in the serviceManager as "storage", and support a series of get and set methods.
 3. In wallet.js, you can choose to register the kind oof storage class you like, and the underlying implementation will be used by any requester.
 
-**8- !Advanced: Catching Custom Events **
+**8- !Advanced: Catching Custom Events**
 1. If you are building a driver, or service, you may be interested in generating or handling events. When events arrive from WalletConnect, they are encoded as RPC requests like so:
 ```
 /// Service Requestor (WCDriver)
@@ -147,7 +147,11 @@ this.responder = async (args,metadata) => {
           event.func_resolve("some_hard_coded_result"); // return the result
           return;
       }
+      //
+      // c.1, c.2, c.3 all describe different approval schemes.
+      //
       
+      ////////////
       // (c.1) you may run invoke the request right away
       let resp = this.serviceManager.run(
               event.service, 
@@ -156,7 +160,8 @@ this.responder = async (args,metadata) => {
               event.args);
       event.func_resolve(resp); // return the result
       
-      // (c.1) you may run invoke the request right away
+      ////////////
+      // (c.2) you may otherwise pass along the event for approval, and then process the request
       let approval = await someInterface.promptApproval(event)
       if (approval)
       {
@@ -169,8 +174,15 @@ this.responder = async (args,metadata) => {
       }
       else
       {
-          event.func_resolve("Approval Rejected"); // return the result           
+          event.func_reject("Approval Rejected"); // return the result           
       }
+      
+      
+      ////////////
+      // (c.3) you can also simply pass on the approval process, and delegate the above details.
+      await someInterface.handleApproval(event);
 }
+      
+
 ... 
 ```
