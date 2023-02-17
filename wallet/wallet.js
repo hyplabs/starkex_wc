@@ -13,44 +13,27 @@
 class Wallet
 { 
   constructor(settings){
-    this.interfaces = {}
-    // disabled - const StarkExGateway = require('./services/StarkExGateway.js');
-    // disabled - this.serviceManager.registerService(new StarkExGateway(this.serviceManager,settings.starkProviderUrl));
+    // Disabled - const StarkExGateway = require('./services/StarkExGateway.js');
+    // Disabled - this.serviceManager.registerService(new StarkExGateway(this.serviceManager,settings.starkProviderUrl));
+   this.interfaces = {}
+   this.walletWCConfig = settings.walletWCConfig;
       
-    const ServiceManager = require('./services/ServiceManager.js');
-    const StarkExWallet = require('./services/StarkExWallet.js');
-
     this.serviceManager = new ServiceManager();
-    this.serviceManager.registerService(new StarkExWallet(this.serviceManager,settings.starkPrivateKey));
-
-    this.system_topics = {};
-
+    const ServiceManager = require('./services/ServiceManager.js');
+      
+    const StarkExWallet = require('./services/StarkExWallet.js');
+    this.serviceManager.registerService(new StarkExWallet(this.serviceManager));
+ 
     const CLIDriver = require('./drivers/CLIDriver.js');
     this.interfaces['cli'] = new CLIDriver(this.serviceManager,settings.approvalMethod);
-    this.doMethodBinding("cli",this.interfaces['cli']);
     
     const WCDriver = require('./drivers/WCDriver.js');
     this.interfaces['wc'] = new WCDriver(this.serviceManager);
-    this.doMethodBinding("wc",this.interfaces['wc']);
   }
     
-  /**
-   *  doMethodBinding
-   *  Unrap the component instance and place driver methods into the parent class dynamically
-   */
-  doMethodBinding(prefix,sourceInstance){
-    let prototype = Object.getPrototypeOf(sourceInstance);
-    let methods = Object.getOwnPropertyNames(prototype);
-    methods.forEach(method => {
-        if(typeof prototype[method] === "function" && method != "constructor" ){
-           //console.log(prefix+"_"+method + " bound");
-            Object.defineProperty(Wallet.prototype, prefix+"_"+method, {
-                get: function() {
-                    return prototype[method].bind(sourceInstance);
-                }
-            });
-        }
-    });
+  async run(){
+    await this.interfaces['wc'].listen(walletWCConfig);       
+    await this.interfaces['cli'].listen();       
   }
 }
 module.exports = Wallet;

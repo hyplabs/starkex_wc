@@ -22,113 +22,11 @@ Object.defineProperties(global.navigator, {
 delete global.window.document.createRange;
 delete global.window.document.getSelection;
 delete global.window.localStorage; 
-
-
-const readline = require('readline');
 const  Wallet  = require('./wallet.js');
-
-let g_autoApprove = false;
-
-
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-
-rl.on('line', async (input) => {
-  const words = input.split(' ');
-  const command = words[0];
-  const args = words.slice(1); 
-
-  if (command === 'echo') {
-    console.log(`Echoing: ${args.join(' ')}`);
-
-  } else if (command === 'auto_approve') {
-    g_autoApprove = true;
-    console.log("\nSystem will now approve all requests");
-  
-  } else if (command === 'list') {
-    console.log(system_topics);
-
-  } else if (command === 'approve') {
-    console.log("approving.. ");
-    adminApproveAll();
-  } else if (command === 'reject') {
-    console.log("rejecting.. ");
-    adminRejectAll();
-  } else if (command === 'auth') {
-    console.log("Pairing.. "+args[0]);
-    await admin.wc_pair(args[0]); // Wallet looks for pairing at relay
-      
-  } else {
-    console.log(`Unknown command: ${command}`);
-  }
-});
-
-async function adminApproveAll(){
-  console.log(JSON.stringify(approvals));
-  approvals.forEach((event)=>{
-    adminRespond(event);
-  });
-  approvals = [];
-}
-
-async function adminRejectAll(){
-  approvals.forEach((event)=>{
-    event.func_reject({'error':"rejected by wallet user"});
-  });
-  approvals = [];
-}
-
-async function adminRequest(event){
-  
-  if (g_autoApprove == true)
-  {
-      console.log("AUTOAPPROVED:");
-      console.log("-------------------");
-      console.log(JSON.stringify(event));
-      console.log("-------------------");
-      adminRespond(event);
-  }
-  else
-  {
-      console.log("New Request from dApp. Type 'approve' to approve it!");
-      console.log("-------------------");
-      console.log(JSON.stringify(event));
-      console.log("-------------------");
-      approvals.push(event);
-  }
-}
-
-async function adminRespond(event){
-  if (event.command == "system_approve_paired_accounts")
-  {
-    event.func_resolve(["0x"+currentAccount['address']]);
-    return;
-  }
-    
-  if (event.command == "system_get_account_data")
-  {
-    retVal = {}
-    retVal['address'] = currentAccount['address'];
-    retVal['publicKey'] = currentAccount['publicKey'];
-    event.func_resolve(retVal);
-    return;
-  }
-
-  let resp = admin.serviceManager.run( event.service, event.role, event.command,event.args);
-  event.func_resolve(resp);
-}
-
 
 let main = async () =>{
   let ethPrivateKey = undefined;
   let ethProviderUrl = undefined;
-  admin = new Wallet({approvalMethod: adminRequest, // This is the handler that is involked when a new event is triggered by a dApp
-                        'ethPrivateKey':"0x8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f", // TESTING. NOT A SECURE KEY
-                            'ethProviderUrl':undefined,
-                            'starkPrivateKey':undefined,
-                            'srarkProviderUrl':undefined}); // This is the RPC target for the Eth Node we wish to speak with
   let walletWCConfig = {
     projectId: "b700887b888adad39517894fc9ab22e1",
     relayUrl: "wss://relay.walletconnect.com",
@@ -139,21 +37,18 @@ let main = async () =>{
       icons: ["https://walletconnect.com/walletconnect-logo.png"],
     },
   }    
-  await admin.wc_listen(walletWCConfig);   
-  await admin.serviceManager.run("starkexgate", "admin", "set_gateway", {"providerUrl":"https://gw.playground-v2.starkex.co"});
-
-  console.log ("Connected:");  
-  console.log (await admin.serviceManager.run("starkexgate", "admin", "getFirstUnusedTxId", {}))
-
-
-  //console.log(JSON.stringify(currentAccount));
-  console.log("begin by writing 'auth PASTE_YOUR_DEEP_LINK'");   
-  console.log("After session_approval, you may see requests for review. With these requests you can respond with 'approve' and 'reject'.");   
-  rl.prompt();
+    
+  admin = new Wallet({
+                        "walletWCConfig":walletWCConfig,
+                        "approvalMethod": "cli", // This is the handler that is involked when a new event is triggered by a dApp
+                            'starkPrivateKey':undefined,
+                            }); // This is the RPC target for the Eth Node we wish to speak with
+   admin.run();
 }
 
-let admin = undefined;
-let currentAccount = {};
-let approvals = [];
-
 main();
+
+
+// 1. Need way to set current account
+// 2. Should be able to set account with mnemonic
+// 3. Constants should be consolidated in env vars
