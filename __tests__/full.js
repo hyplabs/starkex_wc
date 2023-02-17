@@ -29,8 +29,6 @@ const Wallet = require( '../wallet/wallet.js')
 const WCApp = require( '../web3modal/src/components/WCApp.js')
 
 jest.setTimeout(30000);
-
-
 doGenerateAccount = async (app,admin) => {
     // Here we demo:
     // (1) ETH private key Generation. This can be used for L1 functions such deposting into StarkEx.
@@ -38,8 +36,6 @@ doGenerateAccount = async (app,admin) => {
     results.ethProvider =  "https://goerli.infura.io/v3/37519f5fe2fb4d2cac2711a66aa06514";
     results.starkProvider =  "https://gw.playground-v2.starkex.co";
 
-    await app.run("set_admin_account","eth",   {"providerUrl":results.ethProvider});
-    await app.request("set_admin_account", "starkex", {"providerUrl":results.starkProvider});
 
     results.ethResponse = await app.run("generate_account","eth",{});
     
@@ -48,7 +44,6 @@ doGenerateAccount = async (app,admin) => {
     
     // (3) Eth private Data
     results.ethPrivateAccount  = await app.run("expose_account","eth",{publicKey: results.ethResponse.publicKey}); 
-
 
     // (3) StarkEx key Generation.
     results.starkResponse = await app.request("generate_stark_account_from_private_key","starkex",{'privateKey':results.ethPrivateAccount.privateKey});
@@ -87,49 +82,11 @@ doGenerateAccount = async (app,admin) => {
       receiverPublicKey: '0x5fa3383597691ea9d827a79e1a4f0f7949435ced18ca9619de8ab97e661020',
       receiverVaultId: 1,
       expirationTimestamp: 438953});
-    
-  
-    results['getFirstUnusedTxId']  = await app.request("getFirstUnusedTxId","starkexgate", {});
-
-
-
-    results['sendTransaction'] = await app.request( "sendTransaction", "starkexgate", 
-    {
-      "type": "DepositRequest",
-      "tokenId": '0x0b333e3142fe16b78628f19bb15afddaef437e72d6d7f5c6c20c6801a27fba6',
-      "amount": '1000',
-      "vaultId": 1,
-      "starkKey": '0x041ee3cca9025d451b8b3cc780829ec2090ef538b6940df1e264aaf19fb62f80',
-    });
       
     return results;
   }
 
 
-  doL1Deposit = async (app,admin) => {
-    // Move L1 currency into Starkware with a Deposit
-    let args = {};
-    let metadata = {};  
-    let value = "0.001"; // 0.001 Ether
-    let gasPrice = "2000000000"; // 2 Gwei
-    let gasLimit = "21000";
-    let chainId = 5;
-    args = {
-        to: "31349e0c9d36f3d11b980df145a1abc871399b8a",
-        value: value,
-        gasPrice: gasPrice,
-        gasLimit: gasLimit,
-        type:1,
-        chainId: chainId,
-    };
-    metadata = {};
-  
-    let signedEthTransaction = await app.run("signTransaction","eth",args);
-    args = {"hex":signedEthTransaction};
-    let sentEthTransaction = await app.run("sendTransaction","ethgate",args);
-    return {signedEthTransaction, sentEthTransaction};
-
-  }
 
   doL2Deposit = async (app,admin) => {
     results = {}
@@ -143,17 +100,6 @@ doGenerateAccount = async (app,admin) => {
       receiverPublicKey: '0x5fa3383597691ea9d827a79e1a4f0f7949435ced18ca9619de8ab97e661020',
       receiverVaultId: 1,
       expirationTimestamp: 438953});
-
-    results['getFirstUnusedTxId']  = await app.request("getFirstUnusedTxId","starkexgate", {});
-
-    results['sendTransaction'] = await app.request( "sendTransaction", "starkexgate", 
-      {
-      "type": "DepositRequest",
-      "tokenId": '0x0b333e3142fe16b78628f19bb15afddaef437e72d6d7f5c6c20c6801a27fba6',
-      "amount": '1000',
-      "vaultId": 1,
-      "starkKey": '0x041ee3cca9025d451b8b3cc780829ec2090ef538b6940df1e264aaf19fb62f80',
-      });
 
       return results;
   }  
@@ -174,9 +120,7 @@ doGenerateAccount = async (app,admin) => {
                             'generate_account',
                             'signTransaction',
                             'set_gateway',
-                            'getFirstUnusedTxId',
                             'sendTransaction',
-                            "set_admin_account",
                             'generate_stark_account_from_private_key',
                             'generate_account_from_private_key',
                             'select_account',
@@ -189,7 +133,7 @@ doGenerateAccount = async (app,admin) => {
                             'ethProviderUrl':undefined,
                             'starkPrivateKey':undefined,
                             'srarkProviderUrl':undefined,
-                             }); // JUSTIN'S INSTANCE
+                             });
     let app = new WCApp({'ethPrivateKey':"0x8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f", // NOT A SECURE KEY
     'ethProviderUrl':undefined,
     'starkPrivateKey':undefined,
@@ -215,19 +159,10 @@ doGenerateAccount = async (app,admin) => {
     currentAccount = await admin.serviceManager.run("eth", "admin", "generate_account", {});
     await app.serviceManager.run("eth", 
                                     "admin", 
-                                    "set_admin_account", {"privateKey":currentAccount.privateKey,
-                                                          "providerUrl":undefined});    
+                                    "select_account", {"privateKey":currentAccount.privateKey});    
     await appConnectPromise; // APP is starting to listen
     await admin.wc_pair(linkAndApprove.deep_link); // Wallet looks for pairing at relay
     await linkAndApprove.approval; // approval comes back
-    let res =await app.run( "set_gateway", "ethgate", {"providerUrl":"https://goerli.infura.io/v3/37519f5fe2fb4d2cac2711a66aa06514"});
-    expect(res).toEqual(true);
-      
-    res =await app.request( "set_gateway", "starkexgate", {"providerUrl":"https://gw.playground-v2.starkex.co"});
-    expect(res).toEqual(true);
-    
-    res = await app.request( "getFirstUnusedTxId","starkexgate", {});
-    expect(res.toString()).toMatch(/^[0-9]{3,1000}$/);
 
 
     
@@ -252,24 +187,13 @@ doGenerateAccount = async (app,admin) => {
     expect(response).toHaveProperty('generate_request_hash', expect.stringMatching(/^[a-f0-9]+$/));
     expect(response).toHaveProperty('sign_message.r', expect.stringMatching(/^0x[a-f0-9]+$/));
     expect(response).toHaveProperty('sign_message.s', expect.stringMatching(/^0x[a-f0-9]+$/));
-    expect(response).toHaveProperty('getFirstUnusedTxId', expect.any(Number));
-    expect(response).toHaveProperty('sendTransaction.txId', expect.any(Number));
-    expect(response).toHaveProperty('sendTransaction.code', 'TRANSACTION_PENDING');
 
-      
 
-    let l1depositResults = await doL1Deposit(app,admin);
-    console.log("L1 deposit results");
-    console.log(l1depositResults);
-    expect(l1depositResults).toHaveProperty('signedEthTransaction', expect.stringMatching(/^0x[a-f0-9]+$/));
       
     let l2depositResults = await doL2Deposit(app,admin);
     console.log("L2 deposit results");
     console.log(l2depositResults);    
     expect(response).toHaveProperty('sign_message.r', expect.stringMatching(/^0x[a-f0-9]+$/));
     expect(response).toHaveProperty('sign_message.s', expect.stringMatching(/^0x[a-f0-9]+$/));
-    expect(response).toHaveProperty('getFirstUnusedTxId', expect.any(Number));
-    expect(response).toHaveProperty('sendTransaction.txId', expect.any(Number));
-    expect(response).toHaveProperty('sendTransaction.code', 'TRANSACTION_PENDING');
       
   });

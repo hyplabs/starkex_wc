@@ -8,19 +8,19 @@
  *
  * - Service Manager (<Facade> to Services) - Route requests from Drivers to Services
  * --- Service: IService - Generic and empty service
- * --- Service: EthWalletGateway - Create an ETH user
  * 
  */
 class Wallet
 { 
   constructor(settings){
     this.interfaces = {}
+    // disabled - const StarkExGateway = require('./services/StarkExGateway.js');
+    // disabled - this.serviceManager.registerService(new StarkExGateway(this.serviceManager,settings.starkProviderUrl));
+      
     const ServiceManager = require('./services/ServiceManager.js');
     const StarkExWallet = require('./services/StarkExWallet.js');
-    const StarkExGateway = require('./services/StarkExGateway.js');
 
     this.serviceManager = new ServiceManager();
-    this.serviceManager.registerService(new StarkExGateway(this.serviceManager,settings.starkProviderUrl));
     this.serviceManager.registerService(new StarkExWallet(this.serviceManager,settings.starkPrivateKey));
 
     this.system_topics = {};
