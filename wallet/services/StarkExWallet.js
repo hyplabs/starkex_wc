@@ -7,6 +7,8 @@ const crypto = require('crypto');
  * StarkExWallet: IService
  * An implementation of a wallet combination. Partial implementation meant to be instuctive in nature.
  */
+
+
 class StarkExWallet /* implements IService */ { 
     /**
      * Create a new ServiceManager instance.
@@ -19,21 +21,69 @@ class StarkExWallet /* implements IService */ {
         this.starkExUri = uri;
         this.settings.accounts = {}
         this.settings.selectedAccount = undefined
-
+        // Unit Test Verified
+        //this.registry = {
+        //    "TransferRequest": {
+        //        "hashFunction": 'getTransferMsgHash',
+        //        "args": ['amount', 'nonce', 'senderVaultId', 'token', 'receiverVaultId', 'receiverPublicKey', 'expirationTimestamp'],
+        //    },
+        //    "ConditionalTransferRequest": {
+        //        "hashFunction": 'getTransferMsgHash',
+        //        "args": ['amount', 'nonce', 'senderVaultId', 'token', 'receiverVaultId', 'receiverPublicKey', 'expirationTimestamp', 'factRegistryAddress'],
+        //    },
+        //    "OrderRequest": {
+        //        "hashFunction": 'getLimitOrderMsgHash',
+        //        "args": ['vaultIdSell', 'vaultIdBuy', 'amountSell', 'amountBuy', 'tokenSell', 'tokenBuy', 'nonce', 'expirationTimestamp'],
+        //    },
+        //};    
+        
+        //////
+        // Derived from Specification
         this.registry = {
-            "TransferRequest": {
-                "hashFunction": 'getTransferMsgHash',
-                "args": ['amount', 'nonce', 'senderVaultId', 'token', 'receiverVaultId', 'receiverPublicKey', 'expirationTimestamp'],
-            },
-            "ConditionalTransferRequest": {
-                "hashFunction": 'getTransferMsgHash',
-                "args": ['amount', 'nonce', 'senderVaultId', 'token', 'receiverVaultId', 'receiverPublicKey', 'expirationTimestamp', 'factRegistryAddress'],
-            },
-            "OrderRequest": {
-                "hashFunction": 'getLimitOrderMsgHash',
-                "args": ['vaultIdSell', 'vaultIdBuy', 'amountSell', 'amountBuy', 'tokenSell', 'tokenBuy', 'nonce', 'expirationTimestamp'],
-            },
-        };    
+        
+                "TransferRequest": {
+                    "hashFunction": 'getTransferMsgHash',
+                    "args": [ 'amount', 'nonce', 'senderVaultId', 'token', 'receiverVaultId', 'receiverPublicKey', 'expirationTimestamp'], //'type'
+                },
+
+                "ConditionalTransferRequest": {
+                    "hashFunction": 'getTransferMsgHash',
+                    "args": ['amount', 'nonce', 'senderVaultId', 'token', 'receiverVaultId', 'receiverPublicKey', 'expirationTimestamp', 'receiverPublicKey'], //'type'
+                },
+
+                "OrderRequest": {
+                    "hashFunction": 'getLimitOrderMsgHash',
+                    "args": ['vaultIdSell', 'vaultIdBuy', 'amountSell', 'amountBuy', 'tokenSell', 'tokenBuy', 'nonce', 'expirationTimestamp'],
+                },
+                "LimitOrderWithFeesRequest": {
+                    "args": ['type', 'amountBuy', 'amountSell', 'feeLimit', 'feeToken', 'feeVaultId', 'nonce', 'expirationTimestamp', 'tokenBuy', 'tokenSell', 'vaultBuy', 'vaultSell'],
+                },
+                "TransferWithFeesRequest": {
+                    "args": ['type', 'amount', 'feeLimit', 'feeToken', 'feeVaultId', 'nonce', 'expirationTimestamp', 'receiverPublicKey', 'receiverVaultId', 'senderVaultId', 'token'],
+                },
+                "ConditionalTransferWithFeesRequest": {
+                    "args": ['type', 'amount', 'feeLimit', 'feeToken', 'feeVaultId', 'nonce', 'expirationTimestamp', 'receiverPublicKey', 'receiverVaultId', 'senderVaultId', 'token', 'condition'],
+                },
+                "MultiAssetOrderOffchainRequest": {
+                    "args": ['type', 'expirationTimestamp', 'give', 'nonce', 'receive'],
+                },
+                
+                // Perpetual
+                "PerpetualTransferRequest": {
+                    "args": ['type', 'assetId', 'assetIdFee', 'amount', 'maxAmountFee', 'nonce', 'receiverPublicKey', 'receiverPositionId', 'senderPositionId', 'srcFeePositionId', 'expirationTimestamp'],
+                },
+
+                "PerpetualConditionalTransferRequest": {
+                    "args": ['type', 'assetId', 'assetIdFee', 'amount', 'condition', 'maxAmountFee', 'nonce', 'receiverPublicKey', 'receiverPositionId', 'senderPositionId', 'srcFeePositionId', 'expirationTimestamp'],
+                },
+
+                "WithdrawalToAddressRequest": {
+                    "args": ['type', 'amount', 'assetIdCollateral', 'ethAddress', 'nonce', 'expirationTimestamp', 'positionId'],
+                },
+            
+        
+        }
+        
     }
 
     set_admin_account(args,metadata)
@@ -178,6 +228,9 @@ class StarkExWallet /* implements IService */ {
             requestTemplate.args.push('feeInfoUser.token', 'feeInfoUser.sourceVaultId', 'feeInfoUser.feeLimit');
         } else if(request.feeInfo) {
             requestTemplate.args.push('feeInfo.token', 'feeInfo.sourceVaultId', 'feeInfo.feeLimit');
+
+        } else if(request.feeToken) {
+            requestTemplate.args.push('feeToken.token', 'feeToken.sourceVaultId', 'feeToken.feeLimit');
         }
         if (!requestTemplate.hashFunction) 
             return {"error":`Unsupported hashFunction type: ${requestType}.${requestTemplate.hashFunction}`}
