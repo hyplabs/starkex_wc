@@ -35,22 +35,11 @@ doGenerateAccount = async (app,admin) => {
     let results = {}
     results.ethProvider =  "https://goerli.infura.io/v3/37519f5fe2fb4d2cac2711a66aa06514";
     results.starkProvider =  "https://gw.playground-v2.starkex.co";
-
-
     results.ethResponse = await app.run("generate_account","eth",{});
-    
-    // (2) Eth user selection
     results.ethAccount  = await app.run("select_account","eth",{publicKey: results.ethResponse.publicKey}); 
-    
-    // (3) Eth private Data
     results.ethPrivateAccount  = await app.run("expose_account","eth",{publicKey: results.ethResponse.publicKey}); 
-
-    // (3) StarkEx key Generation.
     results.starkResponse = await app.request("generate_stark_account_from_private_key","starkex",{'privateKey':results.ethPrivateAccount.privateKey});
-    
-    // (4) Stark user selection.
     results.starkAccount = await app.request("select_account","starkex",{starkKey:results.starkResponse.starkKey});
-
     return results;
   }
 
@@ -129,22 +118,6 @@ doGenerateAccount = async (app,admin) => {
                   events: ['accountsChanged'] }
       }; 
     
-    let admin = new Wallet({'ethPrivateKey':"0x8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f", // NOT A SECURE KEY
-                            'ethProviderUrl':undefined,
-                            'starkPrivateKey':undefined,
-                            'srarkProviderUrl':undefined,
-                             });
-    let app = new WCApp({'ethPrivateKey':"0x8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f", // NOT A SECURE KEY
-    'ethProviderUrl':undefined,
-    'starkPrivateKey':undefined,
-    'srarkProviderUrl':undefined,
-     }); 
-      
-    // Step 1 - App Propse + Get deep link [  ]
-    let linkAndApprove = await app.doConnect(namespaces,projectId);
-    let appConnectPromise = app.listen();    
-  
-    // Step 2 - APP Connect [  ]
     let walletWCConfig = {
       projectId: projectId,
       relayUrl: "wss://relay.walletconnect.com",
@@ -155,13 +128,26 @@ doGenerateAccount = async (app,admin) => {
         icons: ["https://walletconnect.com/walletconnect-logo.png"],
       },
     }    
-    await admin.wc_listen(walletWCConfig); // CLI starts to listen  
+    let admin = new Wallet({"walletWCConfig":walletWCConfig,
+                            'ethPrivateKey':"0x8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f", // NOT A SECURE KEY
+                            'starkPrivateKey':undefined,
+                             });
+    let app = new WCApp({'ethPrivateKey':"0x8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f", // NOT A SECURE KEY
+                        'starkPrivateKey':undefined,
+                         }); 
+      
+    // Step 1 - App Propse + Get deep link [  ]
+    let linkAndApprove = await app.doConnect(namespaces,projectId);
+    let appConnectPromise = app.listen();    
+    await admin.listen(); // Wallet looks for pairing at relay
+  
     currentAccount = await admin.serviceManager.run("eth", "admin", "generate_account", {});
-    await app.serviceManager.run("eth", 
-                                    "admin", 
-                                    "select_account", {"privateKey":currentAccount.privateKey});    
+    await app.serviceManager.run("eth",  "admin",  "select_account", {"privateKey":currentAccount.privateKey});    
+      
+      
     await appConnectPromise; // APP is starting to listen
-    await admin.wc_pair(linkAndApprove.deep_link); // Wallet looks for pairing at relay
+    //await admin['cli'].pair(linkAndApprove.deep_link); // Wallet looks for pairing at relay
+    await admin.admin_command("auth "+linkAndApprove.deep_link); // Wallet looks for pairing at relay
     await linkAndApprove.approval; // approval comes back
 
 

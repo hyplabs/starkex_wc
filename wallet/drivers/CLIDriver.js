@@ -1,23 +1,23 @@
 const readline = require('readline');
 
 class CLIDriver{
-    constructor(sm,approvalMethod)
+    constructor(sm,approvalMethod,wcDriver)
     {
         this.system_topics = {};
-        
+        this.wcDriver = wcDriver;
         this.serviceManager = sm;
         if (approvalMethod=="cli")
         {
             console.log("ADMIN HANDLER ACTIVATED");
             this.serviceManager.registerAdminHandler(this.adminResponder.bind(this));          
-            const this.rl = readline.createInterface({
+            this.rl = readline.createInterface({
                 input: process.stdin,
                 output: process.stdout
             });
             this.rl.on('line', this.handleReadline);
-            let this.currentAccount = {};
-            let this.approvals = [];
-            let this.g_autoApprove = false;
+            this.currentAccount = {};
+            this.approvals = [];
+            this.g_autoApprove = false;
         }
         else
         {      
@@ -50,11 +50,11 @@ class CLIDriver{
             console.log(`Echoing: ${args.join(' ')}`);
 
         } else if (command === 'auto_approve') {
-            g_autoApprove = true;
+            this.g_autoApprove = true;
             console.log("\nSystem will now approve all requests");
 
         } else if (command === 'list') {
-            console.log(system_topics);
+            console.log(this.system_topics);
 
         } else if (command === 'approve') {
             console.log("approving.. ");
@@ -64,8 +64,7 @@ class CLIDriver{
             this.adminRejectAll();
         } else if (command === 'auth') {
             console.log("Pairing.. "+args[0]);
-            await this.wc_pair(args[0]); // Wallet looks for pairing at relay
-
+            this.wcDriver.pair(args[0]);
         } else {
             console.log(`Unknown command: ${command}`);
         }

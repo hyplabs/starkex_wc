@@ -18,21 +18,25 @@ class Wallet
    this.interfaces = {}
    this.walletWCConfig = settings.walletWCConfig;
       
-    this.serviceManager = new ServiceManager();
     const ServiceManager = require('./services/ServiceManager.js');
+    this.serviceManager = new ServiceManager();
       
     const StarkExWallet = require('./services/StarkExWallet.js');
     this.serviceManager.registerService(new StarkExWallet(this.serviceManager));
  
-    const CLIDriver = require('./drivers/CLIDriver.js');
-    this.interfaces['cli'] = new CLIDriver(this.serviceManager,settings.approvalMethod);
-    
     const WCDriver = require('./drivers/WCDriver.js');
     this.interfaces['wc'] = new WCDriver(this.serviceManager);
-  }
     
-  async run(){
-    await this.interfaces['wc'].listen(walletWCConfig);       
+    const CLIDriver = require('./drivers/CLIDriver.js');
+    this.interfaces['cli'] = new CLIDriver(this.serviceManager,settings.approvalMethod,this.interfaces['wc']);
+    
+  }
+  
+  async admin_command(command_text){
+      this.interfaces['cli'].handleReadline(command_text);
+  }
+  async listen(){
+    await this.interfaces['wc'].listen(this.walletWCConfig);       
     await this.interfaces['cli'].listen();       
   }
 }
