@@ -4,8 +4,8 @@ const starkwareCrypto = require('@starkware-industries/starkware-crypto-utils');
 const crypto = require('crypto');
 
 /**
- * StarkExWallet: IService
- * An implementation of a wallet combination. Partial implementation meant to be instuctive in nature.
+ * StarkExWallet: implements IService.js template
+ * An implementation of a StarkExWallet. Can sign transactions. Meant to be instuctive in nature.
  */
 class StarkExWallet /* implements IService */ { 
     /**
@@ -21,38 +21,44 @@ class StarkExWallet /* implements IService */ {
         this.settings.selectedAccount = undefined
 
         this.registry = {
-            "TransferRequest": {
+            "TransferRequest": { //Tested
                 "hashFunction": 'getTransferMsgHash',
-                "args": ['amount', 'nonce', 'senderVaultId', 'token', 'receiverVaultId', 'receiverPublicKey', 'expirationTimestamp'],
+                "args": [ 'amount', 'nonce', 'senderVaultId', 'token', 'receiverVaultId', 'receiverPublicKey', 'expirationTimestamp'], //'type'
             },
-            "ConditionalTransferRequest": {
+            "ConditionalTransferRequest": { //Tested
                 "hashFunction": 'getTransferMsgHash',
-                "args": ['amount', 'nonce', 'senderVaultId', 'token', 'receiverVaultId', 'receiverPublicKey', 'expirationTimestamp', 'factRegistryAddress'],
+                "args": ['amount', 'nonce', 'senderVaultId', 'token', 'receiverVaultId', 'receiverPublicKey', 'expirationTimestamp', 'receiverPublicKey'], //'type'
             },
-            "OrderRequest": {
+            "OrderRequest": { //Tested
                 "hashFunction": 'getLimitOrderMsgHash',
                 "args": ['vaultIdSell', 'vaultIdBuy', 'amountSell', 'amountBuy', 'tokenSell', 'tokenBuy', 'nonce', 'expirationTimestamp'],
             },
-        };    
-    }
+            "LimitOrderWithFeesRequest": {
+                "args": ['type', 'amountBuy', 'amountSell', 'feeLimit', 'feeToken', 'feeVaultId', 'nonce', 'expirationTimestamp', 'tokenBuy', 'tokenSell', 'vaultBuy', 'vaultSell'],
+            },
+            "TransferWithFeesRequest": {
+                "args": ['type', 'amount', 'feeLimit', 'feeToken', 'feeVaultId', 'nonce', 'expirationTimestamp', 'receiverPublicKey', 'receiverVaultId', 'senderVaultId', 'token'],
+            },
+            "ConditionalTransferWithFeesRequest": {
+                "args": ['type', 'amount', 'feeLimit', 'feeToken', 'feeVaultId', 'nonce', 'expirationTimestamp', 'receiverPublicKey', 'receiverVaultId', 'senderVaultId', 'token', 'condition'],
+            },
+            "MultiAssetOrderOffchainRequest": {
+                "args": ['type', 'expirationTimestamp', 'give', 'nonce', 'receive'],
+            },
+            // Perpetual
+            "PerpetualTransferRequest": {
+                "args": ['type', 'assetId', 'assetIdFee', 'amount', 'maxAmountFee', 'nonce', 'receiverPublicKey', 'receiverPositionId', 'senderPositionId', 'srcFeePositionId', 'expirationTimestamp'],
+            },
+            "PerpetualConditionalTransferRequest": {
+                "args": ['type', 'assetId', 'assetIdFee', 'amount', 'condition', 'maxAmountFee', 'nonce', 'receiverPublicKey', 'receiverPositionId', 'senderPositionId', 'srcFeePositionId', 'expirationTimestamp'],
+            },
 
-    set_admin_account(args,metadata)
-    {
-        let didSet = {providerUrl:false,
-                        privateKey:false};
-        if (args.providerUrl)
-        {
-            this.starkExAPI = new StarkExAPI({endpoint: args.providerUrl});
-            didSet.providerUrl = true;
+            "WithdrawalToAddressRequest": {
+                "args": ['type', 'amount', 'assetIdCollateral', 'ethAddress', 'nonce', 'expirationTimestamp', 'positionId'],
+            },
         }
-        if (args.privateKey)
-        {
-            this.privateKey = args.privateKey;
-            didSet.privateKey = true;
-        }
-        return didSet;
     }
-
+    
     /**
      * The name of the current Service
      * @return {string}
@@ -61,14 +67,6 @@ class StarkExWallet /* implements IService */ {
         return "starkex"
     } 
 
-    /**
-     * Run a dynamic command, and return some result after. This method looks at the registered bound functions,
-     * and routes the function calls to those modules. This is better than copying and pasting several methods
-     * one by one into this interface. This method unpacks the arguments, and places them into an orderd arrangement.
-     * @param {Object} args named dict of arguments intended for your command
-     * @param {Object} metadata associated with your command (command, service, role)
-     * @return {Object}
-     */   
     /**
      * Return a dictionary that defines all methods, and roles that can access that method
      * @return {Object}
@@ -79,36 +77,33 @@ class StarkExWallet /* implements IService */ {
                         "get_public_key":this.get_public_key.bind(this),
                         "sign_message":this.sign_message.bind(this),
                         "select_account":this.select_account.bind(this),
-                        "set_admin_account":this.set_admin_account.bind(this),
                         "generate_stark_account_from_public_key":this.generate_stark_account_from_public_key.bind(this),
                         "generate_stark_account_from_private_key":this.generate_stark_account_from_private_key.bind(this),
                         "get_key_material":this.get_key_material.bind(this),
                         "generate_request_hash":this.generate_request_hash.bind(this),
-                        //"getTransaction":this.getTransaction.bind(this),
-                        //"getFirstUnusedTxId":this.getFirstUnusedTxId.bind(this),
-                        //"sendTransaction":this.sendTransaction.bind(this),
                         },
             "user" : {
             }
         }; 
         return roles;
-    }  
-
-  
-
+    }
 
     /**
      * list_accounts
-     * @return {Object}
-     */        
+     * @param {Object} args - empty
+     * @param {Object} metadata - empty
+     * @return {Object} - a list of all account keys
+     */             
     list_accounts(args,metadata) {
         return Object.keys(this.settings.accounts);    
     }      
     
     /**
      * select_account
-     * @return {Object}
-     */        
+     * @param {Object} args - an object containing a "starkKey" field
+     * @param {Object} metadata - empty
+     * @return {Object} - the starkKey of the selected account or an error object
+     */           
     select_account(args,metadata) {
         if (Object.keys(this.settings.accounts).includes(args.starkKey))
         {
@@ -117,7 +112,13 @@ class StarkExWallet /* implements IService */ {
         }//
         return {"error":"could not find account associated with the starkKey supplied"}        
     }
-
+    
+    /**
+     * generate_stark_account_from_public_key
+     * @param {Object} args - an object containing a "publicKey" field
+     * @param {Object} metadata - empty
+     * @return {Object} - the new stark account information or an error object
+     */        
     async generate_stark_account_from_public_key(args,metadata){
         if (!args.publicKey)
         {
@@ -140,7 +141,13 @@ class StarkExWallet /* implements IService */ {
         this.settings.accounts[starkAcc.starkKey] = starkAcc;
         return {"starkKey":starkAcc.starkKey}      
     }
-
+    
+    /**
+     * generate_stark_account_from_private_key
+     * @param {Object} args - an object containing a "privateKey" field
+     * @param {Object} metadata - empty
+     * @return {Object} - the new stark account information
+     */        
     generate_stark_account_from_private_key(args,metadata) {
         if (!args.privateKey)
         {
@@ -157,15 +164,19 @@ class StarkExWallet /* implements IService */ {
 
     /**
      * get_public_key
-     * @return {Object}
-     */        
+     * @param {Object} args - empty
+     * @param {Object} metadata - empty
+     * @return {Object} - a list of all account keys
+     */               
     async get_public_key(args,metadata) {
         return Object.keys(this.settings.accounts);   
     } 
 
     /**
      * generate_request_hash
-     * @return {Object}
+     * @param {Object} request - an object containing the request fields
+     * @param {Object} metadata - empty
+     * @return {Object} - the hash of the request or an error object
      */        
     async generate_request_hash(request,metadata) {
         let msgHash;
@@ -178,6 +189,9 @@ class StarkExWallet /* implements IService */ {
             requestTemplate.args.push('feeInfoUser.token', 'feeInfoUser.sourceVaultId', 'feeInfoUser.feeLimit');
         } else if(request.feeInfo) {
             requestTemplate.args.push('feeInfo.token', 'feeInfo.sourceVaultId', 'feeInfo.feeLimit');
+
+        } else if(request.feeToken) {
+            requestTemplate.args.push('feeToken.token', 'feeToken.sourceVaultId', 'feeToken.feeLimit');
         }
         if (!requestTemplate.hashFunction) 
             return {"error":`Unsupported hashFunction type: ${requestType}.${requestTemplate.hashFunction}`}
@@ -196,7 +210,9 @@ class StarkExWallet /* implements IService */ {
 
     /**
      * sign_message
-     * @return {Object}
+     * @param {Object} args - an object containing either a "hash" field or a request object
+     * @param {Object} metadata - empty
+     * @return {Object} - an object with the "r" and "s" signature fields
      */        
     async sign_message(args,metadata) {
         // /return {'error':"not finished"}
@@ -205,7 +221,7 @@ class StarkExWallet /* implements IService */ {
             msgHash = this.generate_request_hash(args);
         else
             msgHash = args.hash;
-        const keyPair = starkwareCrypto.ec.keyFromPrivate("0x8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f", 'hex');
+        const keyPair = starkwareCrypto.ec.keyFromPrivate(this.settings.selectedAccount.starkKey, 'hex');
         let msgHashRecover = parseInt(msgHash, 16);
 
         const msgSignature = starkwareCrypto.sign(keyPair, msgHashRecover);
@@ -215,7 +231,9 @@ class StarkExWallet /* implements IService */ {
 
     /**
      * get_key_material
-     * @return {Object}
+     * @param {Object} args - an object containing a "seed" field and an optional "number" field
+     * @param {Object} metadata - empty
+     * @return {Object} - an object with the "result" deterministic random number field
      */        
     async get_key_material(args, metadata) {
         let seed = args.seed || '';

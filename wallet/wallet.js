@@ -8,31 +8,36 @@
  *
  * - Service Manager (<Facade> to Services) - Route requests from Drivers to Services
  * --- Service: IService - Generic and empty service
- * --- Service: EthWalletGateway - Create an ETH user
  * 
  */
 class Wallet
 { 
   constructor(settings){
-    this.interfaces = {}
+    // Disabled - const StarkExGateway = require('./services/StarkExGateway.js');
+    // Disabled - this.serviceManager.registerService(new StarkExGateway(this.serviceManager,settings.starkProviderUrl));
+   this.interfaces = {}
+   this.walletWCConfig = settings.walletWCConfig;
+      
     const ServiceManager = require('./services/ServiceManager.js');
-    const StarkExWallet = require('./services/StarkExWallet.js');
-    const StarkExGateway = require('./services/StarkExGateway.js');
-
     this.serviceManager = new ServiceManager();
-    this.serviceManager.registerService(new StarkExGateway(this.serviceManager,settings.starkProviderUrl));
-    this.serviceManager.registerService(new StarkExWallet(this.serviceManager,settings.starkPrivateKey));
-
-    this.system_topics = {};
-
-    const CLIDriver = require('./drivers/CLIDriver.js');
-    this.interfaces['cli'] = new CLIDriver(this.serviceManager,settings.approvalMethod);
-    this.doMethodBinding("cli",this.interfaces['cli']);
-    
+      
+    const StarkExWallet = require('./services/StarkExWallet.js');
+    this.serviceManager.registerService(new StarkExWallet(this.serviceManager));
+ 
     const WCDriver = require('./drivers/WCDriver.js');
     this.interfaces['wc'] = new WCDriver(this.serviceManager);
-    this.doMethodBinding("wc",this.interfaces['wc']);
+    
+    const CLIDriver = require('./drivers/CLIDriver.js');
+    this.interfaces['cli'] = new CLIDriver(this.serviceManager,settings.approvalMethod,this.interfaces['wc']);
+    
   }
-
+  
+  async admin_command(command_text){
+      this.interfaces['cli'].handleReadline(command_text);
+  }
+  async listen(){
+    await this.interfaces['wc'].listen(this.walletWCConfig);       
+    await this.interfaces['cli'].listen();       
+  }
 }
 module.exports = Wallet;

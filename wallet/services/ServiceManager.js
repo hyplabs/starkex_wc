@@ -129,15 +129,12 @@ class ServiceManager {
             console.log(Object.keys(roleCommandsMap[role]));
             return {"error":"Command '"+command+"' not supported in the Service."}        
         }
-        let func = roleCommandsMap[role][command];
         
+        let func = roleCommandsMap[role][command];
         let event = {...args};
-
         event['service'] = service;
         event['command'] = command;
         event['role'] = role;
-        //event['example_metadata']= 'ran command';
-        //this.emit(service, event); // emit an event, noting a function call
         return func(args,event);
     }    
 }

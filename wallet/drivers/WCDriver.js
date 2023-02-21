@@ -12,7 +12,6 @@ const { Core } = require( "@walletconnect/core");
 const { inspect } = require( 'util') ;
 const ServiceManager = require('../services/ServiceManager.js');
 
-
 class WCDriver{
     
   async queryForResponse(service,method,params,metadata){

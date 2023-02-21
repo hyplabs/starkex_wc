@@ -1,4 +1,3 @@
-
 /**
  * IService Interface (class)
  * Simply cut and paste IService into ./services, and customize, to add a new service into the ServiceManager
@@ -53,7 +52,6 @@ class IService {
         return "iservice"
     }
 
-
     /**
      * Run a command, and return some result after.
      * @param {Object} args Arguments intended for your command
@@ -80,5 +78,4 @@ class IService {
         };
     }    
 } 
-
 module.exports = IService;
