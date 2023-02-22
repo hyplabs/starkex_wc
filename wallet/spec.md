@@ -22,15 +22,14 @@ Returns an object with the generated account and starkKey as properties. Adds th
   * `privateKey: string` - The private key to generate the account and starkKey from.
 
 
-
 # get_public_key() => Object
 Returns a promise that resolves to an object with the public keys of the existing accounts as keys.
 
-# generate_request_hash(request: Object)  => Object
+# generate_request_hash(args: Object)  => Object
 Returns a promise that resolves to a string representing the generated hash.
 
-* `request: Object`
-  * `type: string` - The type of request (one of "TransferRequest", "ConditionalTransferRequest", or "OrderRequest").
+* `args: Object`
+  * `type: string` - The type of request (examples are of "TransferRequest", "ConditionalTransferRequest", or "OrderRequest").
   * `amount: number` - The amount to transfer or trade.
   * `nonce: number` - A unique identifier for the request.
   * `senderVaultId: number` - The vault ID of the sender.
