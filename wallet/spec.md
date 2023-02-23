@@ -22,15 +22,14 @@ Returns an object with the generated account and starkKey as properties. Adds th
   * `privateKey: string` - The private key to generate the account and starkKey from.
 
 
-
 # get_public_key() => Object
 Returns a promise that resolves to an object with the public keys of the existing accounts as keys.
 
-# generate_request_hash(request: Object)  => Object
-Returns a promise that resolves to a string representing the generated hash.
+# generate_request_hash(args: Object)  => Object
+Returns a promise that resolves to a string representing the generated hash. Please see transactions.md for information on transactions.
 
-* `request: Object`
-  * `type: string` - The type of request (one of "TransferRequest", "ConditionalTransferRequest", or "OrderRequest").
+* `args: Object`
+  * `type: string` - The type of request (examples are of "TransferRequest", "ConditionalTransferRequest", or "OrderRequest").
   * `amount: number` - The amount to transfer or trade.
   * `nonce: number` - A unique identifier for the request.
   * `senderVaultId: number` - The vault ID of the sender.
@@ -59,3 +58,23 @@ Returns a promise that resolves to an object with the deterministic random numbe
 * `args: Object`
   * `seed: string?` - The seed to use when generating the key material. If not provided, an empty string is used.
   * `number: number?` - The number to use when generating the key material. If not provided, 0 is used.
+  
+  
+  
+  
+  
+registry.json -- will sit in the /wallet/ directory, and lists out arguments for each registered hash request
+spec.md is in the /wallet/ directory, and will need to be edited as well to registry.json
+
+Task list:
+- systemId support (in progress)
+- How to update the registry guide
+- Load registry dynamically from json file
+- Re-test he GUI dApp
+- Remove ETH and other artifacts
+- Extraction of configuration variables into configuration locations.
+- Create list of questions for Fireblocks
+- remove services/starkExGateway
+- change StarkEx wallet to Stark wallet
+- remove generate a starkex account from a public key
+- When referring to keys it should always be said if it is an Eth key

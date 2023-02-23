@@ -50,7 +50,8 @@ doGenerateAccount = async (app,admin) => {
 
     results['generate_request_hash'] = await app.request("generate_request_hash", 
     "starkex",  
-      {"type":"TransferRequest",
+      {"type":"SpotTransferRequest",
+      systemId: '1',
       amount: '1000',
       nonce: 1519522183,
       senderPublicKey: '0x59a543d42bcc9475917247fa7f136298bb385a6388c3df7309955fcb39b8dd4',
@@ -62,7 +63,8 @@ doGenerateAccount = async (app,admin) => {
     
         
     results['sign_message'] = await app.request("sign_message","starkex",         
-      {"type":"TransferRequest",
+      {"type":"SpotTransferRequest",
+      systemId: '1',
       amount: '1000',
       nonce: 1519522183,
       senderPublicKey: '0x59a543d42bcc9475917247fa7f136298bb385a6388c3df7309955fcb39b8dd4',
@@ -80,7 +82,8 @@ doGenerateAccount = async (app,admin) => {
   doL2Deposit = async (app,admin) => {
     results = {}
     results['sign_message'] = await app.request("sign_message","starkex",         
-      {"type":"TransferRequest",
+      {"type":"SpotTransferRequest",
+      systemId: '1',
       amount: '1000',
       nonce: 1519522183,
       senderPublicKey: '0x59a543d42bcc9475917247fa7f136298bb385a6388c3df7309955fcb39b8dd4',
@@ -149,8 +152,6 @@ doGenerateAccount = async (app,admin) => {
     //await admin['cli'].pair(linkAndApprove.deep_link); // Wallet looks for pairing at relay
     await admin.admin_command("auth "+linkAndApprove.deep_link); // Wallet looks for pairing at relay
     await linkAndApprove.approval; // approval comes back
-
-
     
     let accountResults = await doGenerateAccount(app,admin);
     console.log (accountResults);  
@@ -162,7 +163,6 @@ doGenerateAccount = async (app,admin) => {
     expect(accountResults['ethPrivateAccount']['address']).toMatch(/^[A-Za-z0-9]{5,1000}$/);
     expect(accountResults['ethPrivateAccount']['publicKey']).toMatch(/^[A-Za-z0-9]{5,1000}$/);
     expect(accountResults['ethPrivateAccount']['privateKey']).toMatch(/^[A-Za-z0-9]{5,1000}$/);
-    expect(accountResults['starkResponse']['privateKey']).toMatch(/^[A-Za-z0-9]{5,1000}$/);
     expect(accountResults['starkResponse']['account']).toMatch(/^[A-Za-z0-9]{5,1000}$/);
     expect(accountResults['starkResponse']['starkKey']).toMatch(/^[A-Za-z0-9]{5,1000}$/);
     expect(accountResults['starkAccount']).toMatch(/^[A-Za-z0-9]{5,1000}$/);

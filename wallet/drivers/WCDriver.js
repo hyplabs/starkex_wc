@@ -60,8 +60,17 @@ class WCDriver{
               genericParing[nsid][spec] = event.params.requiredNamespaces[nsid][spec];
           });
         });
-        let accounts = await this.queryForResponse("eth_wallet_gateway","system_approve_paired_accounts",genericParing,{});
         
+        
+        let accounts = await this.queryForResponse("starkex","get_public_key",{},{});
+        if (accounts.length==0)
+        {
+          accounts = ['0x0000000000000000000000000000000000000000'];
+          //let rejectionReason = "No accounts found in wallet";
+          //await this.signClient.reject(event.id, rejectionReason);
+          //return;            
+        }
+          
         /// TODO -- This should validate only accounts on relevant chains. As a demo this is fine.
         Object.keys(genericParing).forEach((nsid)=>{
           event.params.requiredNamespaces[nsid].chains.forEach((chainid)=>{
@@ -72,12 +81,9 @@ class WCDriver{
           });
         });
 
-
         let apprv = {"id":event.id,"namespaces":genericParing}
         let vals   =  await this.signClient.approve(apprv);
         this.system_topics[vals.topic] =  event;
-            
-              
         
         /* This is a VERY useful template to have for debugging reasons. Delete close to production.
         let apprv = {
