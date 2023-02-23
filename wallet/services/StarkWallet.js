@@ -196,17 +196,20 @@ class StarkWallet /* implements IService */ {
         let requestTemplate = this.registry[requestType]; 
         if (request.feeInfoUser) {
             requestTemplate.args.push('feeInfoUser.token', 'feeInfoUser.sourceVaultId', 'feeInfoUser.feeLimit');
+            requestTemplate.hashArgs.push('feeInfoUser.token', 'feeInfoUser.sourceVaultId', 'feeInfoUser.feeLimit');
         } else if(request.feeInfo) {
             requestTemplate.args.push('feeInfo.token', 'feeInfo.sourceVaultId', 'feeInfo.feeLimit');
+            requestTemplate.hashArgs.push('feeInfo.token', 'feeInfo.sourceVaultId', 'feeInfo.feeLimit');
 
         } else if(request.feeToken) {
             requestTemplate.args.push('feeToken.token', 'feeToken.sourceVaultId', 'feeToken.feeLimit');
+            requestTemplate.hashArgs.push('feeToken.token', 'feeToken.sourceVaultId', 'feeToken.feeLimit');
         }
         if (!requestTemplate.hashFunction) 
             return {"error":`Unsupported hashFunction type: ${requestType}.${requestTemplate.hashFunction}`}
         
         let anError = null;
-        requestTemplate.hashArgs.forEach((param) =>{
+        requestTemplate.args.forEach((param) =>{
             if(!Object.keys(request).includes(param))  
                 anError = `Missing param for : ${requestType}.${requestTemplate.hashFunction}  ${param}`;
         });

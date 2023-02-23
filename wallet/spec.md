@@ -26,7 +26,7 @@ Returns an object with the generated account and starkKey as properties. Adds th
 Returns a promise that resolves to an object with the public keys of the existing accounts as keys.
 
 # generate_request_hash(args: Object)  => Object
-Returns a promise that resolves to a string representing the generated hash.
+Returns a promise that resolves to a string representing the generated hash. Please see transactions.md for information on transactions.
 
 * `args: Object`
   * `type: string` - The type of request (examples are of "TransferRequest", "ConditionalTransferRequest", or "OrderRequest").
