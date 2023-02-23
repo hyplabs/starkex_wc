@@ -28,31 +28,13 @@ g_exampleCommands['eth.transfer'] = {
             }    
 }
 
-g_exampleCommands['stark.getFirstUnusedTxId'] = {
-        service:"starkexgate",
-        type:"request",
-        command:"getFirstUnusedTxId",
-        args: {}   
-} 
-
-g_exampleCommands['stark.send'] = {
-        service:"starkexgate",
-        type:"request",
-        command:"sendTransaction",
-        args: {
-          "type": "DepositRequest",
-          "tokenId": '0x0b333e3142fe16b78628f19bb15afddaef437e72d6d7f5c6c20c6801a27fba6',
-          "amount": '1000',
-          "vaultId": 1,
-          "starkKey": '0x041ee3cca9025d451b8b3cc780829ec2090ef538b6940df1e264aaf19fb62f80',
-          }   
-} 
 
 g_exampleCommands['stark.sign_message'] = {
         service:"starkex",
         type:"request",
         command:"sign_message",
         args: {"type":"TransferRequest",
+              systemId: "0",
               amount: '1000',
               nonce: 1519522183,
               senderPublicKey: '0x59a543d42bcc9475917247fa7f136298bb385a6388c3df7309955fcb39b8dd4',
@@ -111,7 +93,12 @@ class App extends Component {
       if (query.type == "run")
           return await this.run(query.command,query.service,query.args);
   }
-
+  /*  signAndSend - *Example compound transaction*
+      Sign and send both signs a local ETH transaction, it also sends the signed transaction
+      Mostly, however, this is an example of how to create a compound transaction within
+      the App.js. You can use this function as inspiration when developing your own
+      multi-step queries
+  */
   signAndSend = async (query) => {
     if (query.service == "eth")
     {
@@ -279,24 +266,26 @@ class App extends Component {
                 <Form.Group>
                   <Form.Control
                     type="button"
-                    value="Connect"
-                    onClick={this.handleConnect}
-                  />
-                </Form.Group>
-                <Form.Group>
-                  <Form.Control
-                    type="button"
-                    value="Generate ETH Account"
+                    value="1. create browser eth keys"
                     onClick={this.handleEthGenerateAccount}
                   />
                 </Form.Group>
                 <Form.Group>
                   <Form.Control
                     type="button"
-                    value="Get public key"
+                    value="2. connect to stark-wallet"
+                    onClick={this.handleConnect}
+                  />
+                </Form.Group>    
+                <Form.Group>
+                  <Form.Control
+                    type="button"
+                    value="3. create stark-wallet key"
                     onClick={this.handleStarkGenerateAccount}
                   />
                 </Form.Group>
+
+
               <Form.Group controlId="transactionSelect">
                   <Form.Control
                     as="select"
@@ -310,13 +299,13 @@ class App extends Component {
                         </option>
                       ))}
                   </Form.Control>
-                  <Form.Control as="textarea" rows="15" 
+                  <Form.Control as="textarea" rows="7" 
                     defaultValue={this.state.selectedQuery}
                     onChange={(event) => this.setState({ selectedQuery: event.target.value })}
                   />
             <Form.Control
                     type="button"
-                    value="Run Query"
+                    value="4. run example query"
                     onClick={this.handleQuery}
                   />
               </Form.Group>
