@@ -152,8 +152,6 @@ doGenerateAccount = async (app,admin) => {
     //await admin['cli'].pair(linkAndApprove.deep_link); // Wallet looks for pairing at relay
     await admin.admin_command("auth "+linkAndApprove.deep_link); // Wallet looks for pairing at relay
     await linkAndApprove.approval; // approval comes back
-
-
     
     let accountResults = await doGenerateAccount(app,admin);
     console.log (accountResults);  

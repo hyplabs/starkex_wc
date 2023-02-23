@@ -43,7 +43,7 @@ let main = async () =>{
                         "approvalMethod": "cli", // This is the handler that is involked when a new event is triggered by a dApp
                             'starkPrivateKey':undefined,
                             }); // This is the RPC target for the Eth Node we wish to speak with
-   admin.run();
+   admin.listen();
 }
 
 main();

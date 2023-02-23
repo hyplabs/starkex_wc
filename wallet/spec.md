@@ -58,3 +58,23 @@ Returns a promise that resolves to an object with the deterministic random numbe
 * `args: Object`
   * `seed: string?` - The seed to use when generating the key material. If not provided, an empty string is used.
   * `number: number?` - The number to use when generating the key material. If not provided, 0 is used.
+  
+  
+  
+  
+  
+registry.json -- will sit in the /wallet/ directory, and lists out arguments for each registered hash request
+spec.md is in the /wallet/ directory, and will need to be edited as well to registry.json
+
+Task list:
+- systemId support (in progress)
+- How to update the registry guide
+- Load registry dynamically from json file
+- Re-test he GUI dApp
+- Remove ETH and other artifacts
+- Extraction of configuration variables into configuration locations.
+- Create list of questions for Fireblocks
+- remove services/starkExGateway
+- change StarkEx wallet to Stark wallet
+- remove generate a starkex account from a public key
+- When referring to keys it should always be said if it is an Eth key

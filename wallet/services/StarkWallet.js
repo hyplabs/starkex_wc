@@ -20,11 +20,7 @@ class StarkWallet /* implements IService */ {
         this.settings.accounts = {}
         this.settings.selectedAccount = undefined
         this.settings.signedMessages = {}
-        this.loadRegistry(remote_url).then((reg)=>{
-            this.registry =reg;
-            console.log("this.registry");
-            console.log(this.registry);                                
-            });
+        this.loadRegistry(remote_url).then((reg)=>{this.registry =reg;});
     }
     
     /**
@@ -92,8 +88,8 @@ class StarkWallet /* implements IService */ {
                         "get_public_key":this.get_public_key.bind(this),
                         "sign_message":this.sign_message.bind(this),
                         "select_account":this.select_account.bind(this),
-                        "generate_stark_account_from_public_key":this.generate_stark_account_from_public_key.bind(this),
-                        "generate_stark_account_from_private_key":this.generate_stark_account_from_private_key.bind(this),
+                        "get_selected_account":this.get_selected_account.bind(this),
+                        "expose_account":this.expose_account.bind(this),                       "generate_stark_account_from_private_key":this.generate_stark_account_from_private_key.bind(this),
                         "get_key_material":this.get_key_material.bind(this),
                         "generate_request_hash":this.generate_request_hash.bind(this),
                         },
@@ -129,32 +125,28 @@ class StarkWallet /* implements IService */ {
     }
     
     /**
-     * generate_stark_account_from_public_key
-     * @param {Object} args - an object containing a "publicKey" field
+     * get_selected_account
+     * @param {Object} args - empty
+     * @return {Object} - the starkKey of the selected account or an error object
+     */           
+    get_selected_account(args,metadata) {
+        if (this.settings.selectedAccount= undefined)
+            return {"error":" there is no account selected"}
+        return this.settings.selectedAccount.starkKey;
+    }
+    
+    /**
+     * expose_account
+     * @param {Object} args - an object containing a "starkKey" field
      * @param {Object} metadata - empty
-     * @return {Object} - the new stark account information or an error object
-     */        
-    async generate_stark_account_from_public_key(args,metadata){
-        if (!args.publicKey)
-        {
-            return {"error":"you do not have a publicKey argument"}
-        }
-        // Request of the linked service that we want private account details
-        // Since we are in an admin context, we can just run this.
-        let ethAccount = await this.serviceManager.run("eth", "admin",  "expose_account", 
-        {
-          "publicKey": args.publicKey,
-        });       
-        if (ethAccount.error)
-            return {"error":"got an error from the eth service looking up the publicKey :"+ethAccount.error}
-        if (!ethAccount.privateKey)
-            return {"error":"Internal error. Somehow do not have a private Key"}
-
-        if (!ethAccount.publicKey)
-            return {"error":"Internal error. Somehow do not have a public Key"}
-        let starkAcc = this.generate_stark_account_from_private_key({"privateKey":ethAccount.privateKey},{})
-        this.settings.accounts[starkAcc.starkKey] = starkAcc;
-        return {"starkKey":starkAcc.starkKey}      
+     * @return {Object} - the starkKey of the selected account or an error object
+     */           
+    expose_account(args,metadata) {
+        if (args.starkKey == undefined )
+            return {"error":" there is no starkKey property"}
+        if (Object.keys(this.settings.accounts).includes(args.starkKey))
+            return this.settings.accounts[args.starkKey];
+        return {"error":"could not find account associated with the starkKey supplied"}        
     }
     
     /**
@@ -166,7 +158,7 @@ class StarkWallet /* implements IService */ {
     generate_stark_account_from_private_key(args,metadata) {
         if (!args.privateKey)
         {
-            return {"error":"you do not have a publicKey argument"}
+            return {"error":"you do not have a ETH privateKey argument"}
         }
         let dat = {privateKey:args.privateKey}        
         const keyPair = starkwareCrypto.ec.keyFromPrivate(args.privateKey, "hex");
@@ -174,7 +166,9 @@ class StarkWallet /* implements IService */ {
         dat['account'] =  acc.pub.getX().toString("hex");
         dat['starkKey'] =  keyPair.getPublic(true, "hex");
         this.settings.accounts[dat.starkKey] = dat;
-        return dat;
+        let retDat = {...dat};
+        delete retDat['privateKey']
+        return retDat;
     }
 
     /**

@@ -3,6 +3,9 @@ const readline = require('readline');
 class CLIDriver{
     constructor(sm,approvalMethod,wcDriver)
     {
+        
+        if (wcDriver == undefined)
+          throw new Error(`(a) Did not pass a wallet connect driver which is required for auth`);
         this.system_topics = {};
         this.wcDriver = wcDriver;
         this.serviceManager = sm;
@@ -14,7 +17,7 @@ class CLIDriver{
                 input: process.stdin,
                 output: process.stdout
             });
-            this.rl.on('line', this.handleReadline);
+            this.rl.on('line', this.handleReadline.bind(this));
             this.currentAccount = {};
             this.approvals = [];
             this.g_autoApprove = false;
@@ -29,11 +32,6 @@ class CLIDriver{
     }
     
     testAdminResponder(event){
-      if (event.command == "system_approve_paired_accounts")
-      {
-        event.func_resolve(["0xbe1E971E8e5E50F7698C74656520F0E788a0518D","0x3c582121909DE92Dc89A36898633C1aE4790382b"]);
-        return;
-      }
       let resp = this.serviceManager.run(
               event.service, 
               event.role, 
@@ -64,6 +62,8 @@ class CLIDriver{
             this.adminRejectAll();
         } else if (command === 'auth') {
             console.log("Pairing.. "+args[0]);
+            if (this.wcDriver == undefined)
+              throw new Error(`(b) Did not pass a wallet connect driver which is required for auth`);
             this.wcDriver.pair(args[0]);
         } else {
             console.log(`Unknown command: ${command}`);
@@ -77,9 +77,14 @@ class CLIDriver{
     }
 
     async adminApproveAll(){
-      console.log(JSON.stringify(approvals));
+      console.log(JSON.stringify(this.approvals));
       this.approvals.forEach((event)=>{
-        this.adminResponder(event);
+          let resp = this.serviceManager.run(event.service, 
+                                             event.role, 
+                                             event.command,
+                                             event.args);
+          event.func_resolve(resp);
+          //this.adminResponder(event);
       });
       this.approvals = [];
     }
@@ -92,23 +97,12 @@ class CLIDriver{
     }
     
     async adminResponder(event){
-      if (event.command == "system_approve_paired_accounts")
-      {
-        event.func_resolve(["0x"+currentAccount['address']]);
-        return;
-      }
-
-      if (event.command == "system_get_account_data")
-      {
-        retVal = {}
-        retVal['address'] = currentAccount['address'];
-        retVal['publicKey'] = currentAccount['publicKey'];
-        event.func_resolve(retVal);
-        return;
-      }
-
-      let resp = this.serviceManager.run( event.service, event.role, event.command,event.args);
-      event.func_resolve(resp);
+      console.log("new event for approval, type approve");
+      console.log("-----------");
+      console.log(JSON.stringify(event,null,2));
+      console.log("-----------");
+      this.approvals.push(event);
+        
     }
 }
 module.exports = CLIDriver;
