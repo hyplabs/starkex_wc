@@ -174,8 +174,10 @@ class App extends Component {
         return;
     }
     results.starkProvider =  c_starkProvider;
-    results.starkResponse = await this.request("generate_stark_account_from_private_key","starkex",{'privateKey':this.userInfo.ethPrivateAccount.privateKey}); 
-    results.starkAccount = await this.request("select_account","starkex",{starkKey:results.starkResponse.starkKey});
+    let starkKeyData = await this.request("generate_stark_account_from_private_key","starkex",{'privateKey':this.userInfo.ethPrivateAccount.privateKey}); 
+    results.starkKey = starkKeyData.starkKey;
+    results.starkAccount = starkKeyData.account;
+    results.starkSelected = await this.request("select_account","starkex",{starkKey:results.starkKey});
     this.userInfo = { ...this.userInfo,...results}      
     this.setInfo(JSON.stringify(this.userInfo,null,2));
   }
@@ -188,22 +190,11 @@ class App extends Component {
         return;
     }
     results.ethProvider =  c_ethProvider;
+    let ethAcct = await this.run("generate_account","eth",{});    
     await this.run("set_gateway","ethgate",   {"providerUrl":results.ethProvider});
-    results.ethResponse = await this.run("generate_account","eth",{});
-    results.ethAccount  = await this.run("select_account","eth",{publicKey: results.ethResponse.publicKey}); 
-    results.ethPrivateAccount  = await this.run("expose_account","eth",{publicKey: results.ethResponse.publicKey}); 
+    results.ethPrivateAccount  = await this.run("expose_account","eth",{publicKey: ethAcct.publicKey}); 
     this.userInfo = { ...this.userInfo,...results}      
     this.setInfo(JSON.stringify(this.userInfo,null,2));      
-  }
-
-  doStarkDeposit = async () => {
-
-    alert ("Soon I will do a full Stark deposit!")
-      
-  }
-
-  doStarkTransfer = async () => {
-    alert ("Soon I will do a full Stark transfer!")
   }
 
 
