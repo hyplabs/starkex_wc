@@ -23,12 +23,17 @@ delete global.window.document.createRange;
 delete global.window.document.getSelection;
 delete global.window.localStorage; 
 const  Wallet  = require('./wallet.js');
+const config = require(  './config.json'); 
+
+const c_projectID = config.projectID;
+const c_starkProvider = config.starkProvider;
+const c_ethProvider = config.ethProvider; 
 
 let main = async () =>{
   let ethPrivateKey = undefined;
   let ethProviderUrl = undefined;
   let walletWCConfig = {
-    projectId: "b700887b888adad39517894fc9ab22e1",
+    projectId: c_projectID,
     relayUrl: "wss://relay.walletconnect.com",
     metadata: {
       name: "Wallet name",

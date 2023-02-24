@@ -27,14 +27,16 @@ delete global.window.document.getSelection;
 delete global.window.localStorage; 
 const Wallet = require( '../wallet/wallet.js')
 const WCApp = require( '../web3modal/src/components/WCApp.js')
+const config = require('../config.json');
+
 
 jest.setTimeout(30000);
 doGenerateAccount = async (app,admin) => {
     // Here we demo:
     // (1) ETH private key Generation. This can be used for L1 functions such deposting into StarkEx.
     let results = {}
-    results.ethProvider =  "https://goerli.infura.io/v3/37519f5fe2fb4d2cac2711a66aa06514";
-    results.starkProvider =  "https://gw.playground-v2.starkex.co";
+    results.ethProvider =  config.ethProvider ;
+    results.starkProvider =  config.starkProvider;
     results.ethResponse = await app.run("generate_account","eth",{});
     results.ethAccount  = await app.run("select_account","eth",{publicKey: results.ethResponse.publicKey}); 
     results.ethPrivateAccount  = await app.run("expose_account","eth",{publicKey: results.ethResponse.publicKey}); 
@@ -98,11 +100,12 @@ doGenerateAccount = async (app,admin) => {
 
 
 
-  test('Test ServiceManager registration with ethers.js long version', async () => {
+  test('Test System', async () => {
     jest.setTimeout(30000);
     const dom = new JSDOM();
     global.document = dom.window.document;
-    const projectId = 'b700887b888adad39517894fc9ab22e1';
+    const projectId = config.projectID;
+      
     const namespaces = {
         eip155: { methods: ['generate_request_hash',
                             'personal_sign',
