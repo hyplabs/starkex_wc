@@ -7,7 +7,7 @@ const config = require(  './config.json');
 
 const c_projectID = config.projectID;
 const c_starkProvider = config.starkProvider;
-const c_ethProvider = ethProvider.ethProvider; 
+const c_ethProvider = config.ethProvider; 
 
 // TRAINING COMMANDS - some toy commands to play with
 let g_exampleCommands = {}  
