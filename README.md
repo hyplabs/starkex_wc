@@ -1,6 +1,8 @@
 # Introduction
 Welcome to the Crypto Wallet and dApp Solution for StarkEx. This repository contains two projects that work together to provide a comprehensive solution for creating secure and reliable cryptocurrency wallets and decentralized applications (dApps) specifically for the StarkEx ecosystem. The projects are the web3modal and wallet.
 
+**important** Please set up a config.json in all application directories you intend to run. There is a config_example.json present.
+
 ### web3modal
 The web3modal directory contains a dApp (decentralized application) and a SignClient that allows for secure communication between the dApp and the wallet component of the project. The SignClient is a client-side implementation of the WalletConnect protocol that enables the wallet application to communicate with the dApp. This allows users to access their wallet's functionality and data, such as sending and receiving cryptocurrency, directly from the dApp without compromising security. 
 - To deploy locally run "npm run start" in the web3modal directory

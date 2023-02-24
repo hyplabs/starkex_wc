@@ -1,12 +1,8 @@
 # Wallet Developer Guide 
-This is your guide to developing and launching your own StarkEx wallet. If you are a wallet developer, interested in signing transactions for StarkEx, this is the right document for you. There are a few main sections. First, we will cover Wallet Architecture, just to get our bearings. Second, we will discuss each major wallet component. Third, we will discuss best practices and places to expand the codebase for your organization. Lastly, we will provide a checklist, a series of steps to follow when making your own wallet.
-
+This is your guide to developing and launching your own StarkEx wallet. If you are a wallet developer, interested in signing transactions for StarkEx, this is the right document for you. 
 
 ## 0 Testing
-There are two forms of testing. Internal, and External.
-
-1. *Internal*: from the /wallet/ directory, you can run "npm run test" and this will test the wallet. You can also open up /wallet/tests, to inspect basic line by line usage of the wallet. This test case is similar to what you may do if you are adminstering the wallet locally, on a server, or directly on a wallet-user's computer.
-2. *External*: from the / (root) directory, you can run "npm run test" and this will test the end to end system via WalletConnect. You can also open up /tests folder, to inspect External use, line by line. This test case is similar to what an end-user may experience.
+From the / (root) directory, you can run "npm run test" and this will test the end to end system via WalletConnect. You can also open up /tests folder, to inspect External use, line by line. This test case is similar to what an end-user may experience.
 
 If you are doign Test Driven Development, it is possible to extend these use cases with additional features, then to consult the arcitecture diagram to look for development or extension oppourtunities. 
 
