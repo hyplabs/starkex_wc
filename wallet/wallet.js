@@ -13,8 +13,6 @@
 class Wallet
 { 
   constructor(settings){
-    // Disabled - const StarkExGateway = require('./services/StarkExGateway.js');
-    // Disabled - this.serviceManager.registerService(new StarkExGateway(this.serviceManager,settings.starkProviderUrl));
    this.interfaces = {}
    this.walletWCConfig = settings.walletWCConfig;
       

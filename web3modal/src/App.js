@@ -3,14 +3,11 @@ import { Navbar, Nav, Form, FormControl, Button,  } from 'react-bootstrap';
 import { Container, Row, Col } from 'react-bootstrap';
 import { Web3Modal } from '@web3modal/standalone'
 const WCApp = require(  './components/WCApp.js'); 
+const config = require(  './config.json'); 
 
-// IMPORTANT CONSTANTS. FILL THESE IN.
-// These constants are here, so as a developer you can just focus on understanding
-// However, you should set up environment variables for any production application.
-const c_projectID = 'b700887b888adad39517894fc9ab22e1'; // This is the WalletConnect project ID for the wallet you are making / using
-const c_starkProvider = "https://gw.playground-v2.starkex.co"; // This is the gateway you would like to talk to
-const c_ethProvider = "https://goerli.infura.io/v3/37519f5fe2fb4d2cac2711a66aa06514"; // This is the gateway you would like to talk to
-
+const c_projectID = config.projectID;
+const c_starkProvider = config.starkProvider;
+const c_ethProvider = ethProvider.ethProvider; 
 
 // TRAINING COMMANDS - some toy commands to play with
 let g_exampleCommands = {}  
@@ -159,7 +156,7 @@ class App extends Component {
 
     /**
      * With admin approval, lets actually expose keys. The Wallet will have to voluntairly send this data over.
-     * (Go ahead and try to say Y and then N to this request)
+     * (Go ahead and try to say Y and then N to these requests in the /wallet/index.js application)
      */
   handleStarkGenerateAccount = async () => {
     let results = {}
