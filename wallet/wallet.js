@@ -21,6 +21,9 @@ class Wallet
       
     const StarkWallet = require('./services/StarkWallet.js');
     this.serviceManager.registerService(new StarkWallet(this.serviceManager));
+    
+    const StarkExGateway  = require('./services/StarkExGateway.js');
+    this.serviceManager.registerService(new StarkExGateway(this.serviceManager));
  
     const WCDriver = require('./drivers/WCDriver.js');
     this.interfaces['wc'] = new WCDriver(this.serviceManager);

@@ -31,6 +31,7 @@ const config = require('../config.json');
 //const spottx = require('spottx.json');
 const path = require('path');
 const spottx = require(path.join(__dirname, 'spottx.json'));
+const spottx_signed = require(path.join(__dirname, 'spottx_signed.json'));
 
 
 jest.setTimeout(60000);
@@ -48,84 +49,10 @@ doGenerateAccount = async (app,admin) => {
     return results;
   }
 
-  doTestTransactions = async (app,admin) => {
-    let val;
-    results = {}
-    results['get_key_material'] = await app.request("get_key_material","starkex", {});
-
-    results['generate_request_hash'] = await app.request("generate_request_hash", 
-    "starkex",  
-      {"type":"TransferRequest",
-      systemId: '1',
-      amount: '1000',
-      nonce: 1519522183,
-      senderPublicKey: '0x59a543d42bcc9475917247fa7f136298bb385a6388c3df7309955fcb39b8dd4',
-      senderVaultId: 1,
-      token: '0x3003a65651d3b9fb2eff934a4416db301afd112a8492aaf8d7297fc87dcd9f4',
-      receiverPublicKey: '0x5fa3383597691ea9d827a79e1a4f0f7949435ced18ca9619de8ab97e661020',
-      receiverVaultId: 1,
-      expirationTimestamp: 438953});
-    
-        
-    results['sign_message'] = await app.request("sign_message","starkex",         
-      {"type":"TransferRequest",
-      systemId: '1',
-      amount: '1000',
-      nonce: 1519522183,
-      senderPublicKey: '0x59a543d42bcc9475917247fa7f136298bb385a6388c3df7309955fcb39b8dd4',
-      senderVaultId: 1,
-      token: '0x3003a65651d3b9fb2eff934a4416db301afd112a8492aaf8d7297fc87dcd9f4',
-      receiverPublicKey: '0x5fa3383597691ea9d827a79e1a4f0f7949435ced18ca9619de8ab97e661020',
-      receiverVaultId: 1,
-      expirationTimestamp: 438953});
-      
-      
-      
-    return results;
-  }
-
-
-
-  doL2Deposit = async (app,admin) => {
-    results = {}
-    results['sign_message'] = await app.request("sign_message","starkex",         
-      {"type":"TransferRequest",
-      systemId: '1',
-      amount: '1000',
-      nonce: 1519522183,
-      senderPublicKey: '0x59a543d42bcc9475917247fa7f136298bb385a6388c3df7309955fcb39b8dd4',
-      senderVaultId: 1,
-      token: '0x3003a65651d3b9fb2eff934a4416db301afd112a8492aaf8d7297fc87dcd9f4',
-      receiverPublicKey: '0x5fa3383597691ea9d827a79e1a4f0f7949435ced18ca9619de8ab97e661020',
-      receiverVaultId: 1,
-      expirationTimestamp: 438953});
-
-      return results;
-  }  
-
-  doExampleTransactions = async (app,admin) => {
-    results = {}
-    results['sign_message'] = await app.request("sign_message","starkex",         
-      {"type":"TransferRequest",
-      systemId: '1',
-      amount: '1000',
-      nonce: 1519522183,
-      senderPublicKey: '0x59a543d42bcc9475917247fa7f136298bb385a6388c3df7309955fcb39b8dd4',
-      senderVaultId: 1,
-      token: '0x3003a65651d3b9fb2eff934a4416db301afd112a8492aaf8d7297fc87dcd9f4',
-      receiverPublicKey: '0x5fa3383597691ea9d827a79e1a4f0f7949435ced18ca9619de8ab97e661020',
-      receiverVaultId: 1,
-      expirationTimestamp: 438953});
-      
-    results['sendTransaction'] = await app.request("sendTransaction","starkexgate", results['sign_message']['hex']);
-      
-
-      return results;
-  }  
-
-  doTestTransaction= async(req,app,admin,expect,doSign)=>{
+  doTestTransaction= async(req,app,admin,expect,doSign,txAdd)=>{
     if (doSign==true)
     {
+        req['nonce'] = Math.floor(Math.random() * 900000) + 100000;
         let sig = await app.request( "sign_message", "starkex", req);
         console.log("Test Sig")
         console.log(sig)
@@ -133,6 +60,7 @@ doGenerateAccount = async (app,admin) => {
         expect(sig).toHaveProperty('s', expect.stringMatching(/^0x[a-f0-9]+$/));
         req['signature'] = sig;
     }
+    req['tx_add'] = txAdd;
     res = await app.request( "sendTransaction", "starkexgate",req);
     console.log("Test Res")
     console.log(res)
@@ -193,8 +121,6 @@ doGenerateAccount = async (app,admin) => {
   
     currentAccount = await admin.serviceManager.run("eth", "admin", "generate_account", {});
     await app.serviceManager.run("eth",  "admin",  "select_account", {"privateKey":currentAccount.privateKey});    
-      
-      
     await appConnectPromise; // APP is starting to listen
     //await admin['cli'].pair(linkAndApprove.deep_link); // Wallet looks for pairing at relay
     await admin.admin_command("auth "+linkAndApprove.deep_link); // Wallet looks for pairing at relay
@@ -215,20 +141,6 @@ doGenerateAccount = async (app,admin) => {
     expect(accountResults['starkAccount']).toMatch(/^[A-Za-z0-9]{5,1000}$/);
 
 
-    let response = await doTestTransactions(app,admin);
-    expect(response).toHaveProperty('get_key_material.result', expect.stringMatching(/^[a-f0-9]+$/));
-    expect(response).toHaveProperty('generate_request_hash', expect.stringMatching(/^[a-f0-9]+$/));
-    expect(response).toHaveProperty('sign_message.r', expect.stringMatching(/^0x[a-f0-9]+$/));
-    expect(response).toHaveProperty('sign_message.s', expect.stringMatching(/^0x[a-f0-9]+$/));
-
-
-      
-    let l2depositResults = await doL2Deposit(app,admin);
-    console.log("L2 deposit results");
-    console.log(l2depositResults);    
-    expect(response).toHaveProperty('sign_message.r', expect.stringMatching(/^0x[a-f0-9]+$/));
-    expect(response).toHaveProperty('sign_message.s', expect.stringMatching(/^0x[a-f0-9]+$/));
-
     let starkKey = accountResults['starkResponse']['starkKey'];
       
     res =await app.request( "set_gateway", "starkexgate", {"providerUrl":"https://gw.playground-v2.starkex.co"});
@@ -236,6 +148,7 @@ doGenerateAccount = async (app,admin) => {
     
       
     // Some test requests
+    /*
     await doTestTransaction({"type":"TransferRequest",
       systemId: '1',
       amount: '1001',
@@ -245,17 +158,25 @@ doGenerateAccount = async (app,admin) => {
       token: '0x3003a65651d3b9fb2eff934a4416db301afd112a8492aaf8d7297fc87dcd9f4',
       receiverPublicKey: '0x5fa3383597691ea9d827a79e1a4f0f7949435ced18ca9619de8ab97e661020',
       receiverVaultId: 1,
-      expirationTimestamp: 438953},app,admin,expect);
+      expirationTimestamp: 438953},app,admin,expect);*/
+      
+    let tx_add = 0;  
+    
+    for (let i = 0; i < spottx.length; i++) {
+      spottx[i]['systemId'] = 1;
+      await doTestTransaction(spottx[i], app, admin, expect, false, tx_add);
+      tx_add = tx_add +1;
+    }
+      
+    //for (let i = 0; i < spottx_signed.length; i++) {
+    //  spottx_signed[i]['systemId'] = 1;
+    //  await doTestTransaction(spottx_signed[i], app, admin, expect, true, tx_add);
+    //  tx_add = tx_add +2;
+    //}
       
       
-    //spottx.forEach(async (item)=>{
-    //    item['systemId'] = 1;
-    //    await doTestTransaction(item,app,admin,expect);        
-    //});      
-    await Promise.all(spottx.map(async (item) => {
-      item['systemId'] = 1;
-      await doTestTransaction(item, app, admin, expect,sign=false);
-    }));      
+    
+      
     // DEPOSIT --------------------------------------------------------------------
     // WITH FEES --------------------------------------------------------------------
     /*
@@ -275,11 +196,44 @@ doGenerateAccount = async (app,admin) => {
             feeLimit: "0",
             sourceVaultId: 3            
         },
+        "feeToken",   
+        "feeVaultId",
+        "feeLimit"
         feeInfoExchange: {
             destinationStarkKey: '0x041ee3cca9025d451b8b3cc780829ec2090ef538b6940df1e264aaf19fb62f80',
             destinationVaultId: 4,
             feeTaken: 0
-        }},app,admin,expect);*/
+        }},app,admin,expect);
+        
+,    
+    {
+        "systemId": "1",
+        "type": "TransferRequestWithFees",
+        "amount": "1000",
+        "nonce": 1519522183,
+        "senderPublicKey": "0x59a543d42bcc9475917247fa7f136298bb385a6388c3df7309955fcb39b8dd4",
+        "senderVaultId": 1,
+        "token": "0x3003a65651d3b9fb2eff934a4416db301afd112a8492aaf8d7297fc87dcd9f4",
+        "receiverPublicKey": "0x5fa3383597691ea9d827a79e1a4f0f7949435ced18ca9619de8ab97e661020",
+        "receiverVaultId": 1,
+        "expirationTimestamp": 438953,
+        "feeInfoUser": {
+            "token": "0x3003a65651d3b9fb2eff934a4416db301afd112a8492aaf8d7297fc87dcd9f4",
+            "feeLimit": "0",
+            "sourceVaultId": 3
+        },
+        "feeInfoExchange": {
+            "destinationStarkKey": "0x041ee3cca9025d451b8b3cc780829ec2090ef538b6940df1e264aaf19fb62f80",
+            "destinationVaultId": 4,
+            "feeTaken": 1
+        }
+    }        
+        
+        */
+      
+      
+      
+      
       
     // PERPETUAL --------------------------------------------------------------------
     // WITH FEES --------------------------------------------------------------------

@@ -1,0 +1,9 @@
+[
+    {
+        "type": "DepositRequest",
+        "positionId": "123456789",
+        "asset": "ETH",
+        "amount": "1.5",
+        "starkKey": "0x041ee3cca9025d451b8b3cc780829ec2090ef538b6940df1e264aaf19fb62f80"
+    }
+]

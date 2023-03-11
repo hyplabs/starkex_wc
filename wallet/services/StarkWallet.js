@@ -186,38 +186,67 @@ class StarkWallet /* implements IService */ {
      * @param {Object} request - an object containing the request fields
      * @param {Object} metadata - empty
      * @return {Object} - the hash of the request or an error object
-     */        
+     */         
     async generate_request_hash(request,metadata) {
         let msgHash;
+        let findArgValue = undefined;
+        findArgValue = (arg, request) => {
+            if (Object.keys(request).includes(arg)) {
+                return request[arg];
+            }
+            if (arg.includes(".")) {
+                const parts = arg.split(".");
+                const argNext = parts[0];
+                const subArg = parts.slice(1).join(".");
+                return findArgValue(subArg, request[argNext]);
+            }
+            return undefined;
+        };
         const requestType = request.type;
+        if (!this.registry)
+            return {"error":`There is no registry`}
         if (!this.registry[requestType]) 
             return {"error":`Unsupported request type: ${requestType}`}
-
+        
         let requestTemplate = this.registry[requestType]; 
-        if (request.feeInfoUser) {
-            requestTemplate.args.push('feeInfoUser.token', 'feeInfoUser.sourceVaultId', 'feeInfoUser.feeLimit');
-            requestTemplate.hashArgs.push('feeInfoUser.token', 'feeInfoUser.sourceVaultId', 'feeInfoUser.feeLimit');
-        } else if(request.feeInfo) {
-            requestTemplate.args.push('feeInfo.token', 'feeInfo.sourceVaultId', 'feeInfo.feeLimit');
-            requestTemplate.hashArgs.push('feeInfo.token', 'feeInfo.sourceVaultId', 'feeInfo.feeLimit');
-
-        } else if(request.feeToken) {
-            requestTemplate.args.push('feeToken.token', 'feeToken.sourceVaultId', 'feeToken.feeLimit');
-            requestTemplate.hashArgs.push('feeToken.token', 'feeToken.sourceVaultId', 'feeToken.feeLimit');
+        let targetHashFunction = undefined;
+        let targetHashArgs = undefined;
+        
+        if (request.feeInfoUser || request.feeInfo || request.feeToken) {
+            targetHashFunction = requestTemplate.hashFunctionWithFee;
+            targetHashArgs = requestTemplate.hashArgsWithFee;
+            
+            if (!targetHashFunction) 
+                return {"error":`Unsupported hashFunctionWithFee type: ${requestType}`}
+            if (!targetHashArgs) 
+                return {"error":`Unsupported hashArgsWithFee type: ${requestType}`}
+        } else {
+            targetHashFunction = requestTemplate.hashFunction;
+            targetHashArgs = requestTemplate.hashArgs;
+            
+            if (!targetHashFunction) 
+                return {"error":`Unsupported hashFunction type: ${requestType}`}
+            if (!targetHashArgs) 
+                return {"error":`Unsupported hashArguments type: ${requestType}`}
         }
-        if (!requestTemplate.hashFunction) 
-            return {"error":`Unsupported hashFunction type: ${requestType}.${requestTemplate.hashFunction}`}
         
         let anError = null;
-        requestTemplate.args.forEach((param) =>{
-            if(!Object.keys(request).includes(param))  
-                anError = `Missing param for : ${requestType}.${requestTemplate.hashFunction}  ${param}`;
+        targetHashArgs.forEach((param) =>{
+            if(!findArgValue(param,request))  
+                anError = `Missing param for : ${requestType}.${targetHashFunction}  ${param} in `+JSON.stringify(request);
         });
-        if (anError) return {"error":anError};
-        let hashFunc = starkwareCrypto[requestTemplate.hashFunction];         
-        msgHash = hashFunc(...requestTemplate.hashArgs.map(arg => request[arg]));
+        if (anError)
+        {
+            return {"error":anError};
+        }
+        let hashFunc = starkwareCrypto[targetHashFunction]; 
+        let theArgs = [...targetHashArgs.map(arg => findArgValue(arg,request))];
+        if (!hashFunc)
+        {
+            return {"error":`Could not find hash function ${targetHashFunction}. `};
+        }
+        msgHash = hashFunc(...theArgs);
         return msgHash.toString(16);
-        //let msgHashRecover = parseInt(hexString, 16);
     }
 
     /**
@@ -225,7 +254,8 @@ class StarkWallet /* implements IService */ {
      * @param {Object} args - an object containing either a "hash" field or a request object
      * @param {Object} metadata - empty
      * @return {Object} - an object with the "r" and "s" signature fields
-     */        
+     */
+    
     async sign_message(args,metadata) {
         // /return {'error':"not finished"}
         let msgHash;
@@ -234,21 +264,26 @@ class StarkWallet /* implements IService */ {
         if (!(args.hash))
         {
             let hashArgs = {...args}
-            delete hashArgs['systemId']
-            msgHash = this.generate_request_hash(args);
+            msgHash = await this.generate_request_hash(args);
         }
         else
             msgHash = args.hash;
         
+        if (msgHash.error) {
+            return {"error":msgHash.error}
+        }
         // TODO, to developer, implement your own gatekeeping method using systemId to prevent replay attacks.
-        let messageUid = args.systemId+msgHash.toString().slice(-12);
+        let messageUid = JSON.stringify(args);
         if (Object.keys(this.settings.signedMessages).includes(messageUid))
             return {"error":"you have already signed this message during the current session"}
         this.settings.signedMessages[messageUid] = true;
         
         const keyPair = starkwareCrypto.ec.keyFromPrivate(this.settings.selectedAccount.starkKey, 'hex');
-        let msgHashRecover = parseInt(msgHash, 16);
-
+        if (!msgHash) {
+            return {"error":"Could not parse hash into int "+msgHash}
+        }
+        let msgHashRecover = msgHash;
+        
         const msgSignature = starkwareCrypto.sign(keyPair, msgHashRecover);
         return {r: '0x' + msgSignature.r.toString(16), s: '0x' + msgSignature.s.toString(16)};
     }

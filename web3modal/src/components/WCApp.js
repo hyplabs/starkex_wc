@@ -65,6 +65,8 @@ class WCApp{
           params: params,
         },
       }; 
+      console.log("signClient.request");
+      console.log(this.signClient.request);
       const result = await this.signClient.request(packet);
 
       return result;
