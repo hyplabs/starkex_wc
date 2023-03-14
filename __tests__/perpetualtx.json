@@ -1,9 +1,8 @@
 [
     {
-        "type": "DepositRequest",
-        "positionId": "123456789",
-        "asset": "ETH",
-        "amount": "1.5",
-        "starkKey": "0x041ee3cca9025d451b8b3cc780829ec2090ef538b6940df1e264aaf19fb62f80"
+        "amount": "2569146471088859254",
+        "positionId": "7758176404715800194",
+        "publicKey": "0x37ebdcde87a1613e443df789558867f5ba91faf7a024204f7c1bd874da5e70a",
+        "type": "DEPOSIT"
     }
 ]

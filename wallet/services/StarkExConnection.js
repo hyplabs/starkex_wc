@@ -26,9 +26,9 @@ class Gateway
       return snakeCaseObj;
     }    
     
-    async getFirstUnusedTxId() {
+    async get(target_path) {
       try {
-        const response = await fetch(this.endpoint + '/v2/gateway/testing/get_first_unused_tx_id', {
+        const response = await fetch(this.endpoint + target_path, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json'
@@ -48,23 +48,15 @@ class Gateway
       }
     }
 
-    async deposit(args){
-        return await this.send(args,'/v2/gateway/add_transaction')    
-    }
-    async transfer(args){
-        return await this.send(args,'/v2/gateway/add_transaction')
-    }
-    async withdrawal(args){
-        return await this.send(args,'/v2/gateway/add_transaction')
-    }    
-    async send(args, target_path) {
+    async post(args, target_path) {
+      let tx_id = 0;
       try {
         if (!this.endpoint)
           return { "error": "no endpoint set" };
         if (!args.txId)
           return { "error": "no transaction id" };
 
-        const tx_id = args.txId;
+        tx_id = args.txId;
         delete args.txId;
 
         const response = await fetch(this.endpoint + target_path, {
@@ -76,16 +68,16 @@ class Gateway
         });
 
         if (!response.ok) {
-          console.log('Error submitting request: ' + response.statusText);
-          return { "error": response.statusText };
+          console.log('(A) Error submitting request:', response.statusText,{ "tx": this.convertKeysToSnakeCase(args), "tx_id": tx_id });
+          return { "error": response.statusText,"data":{ "tx": this.convertKeysToSnakeCase(args), "tx_id": tx_id } };
         }
 
         const data = await response.json();
         console.log('Request submitted successfully!', data);
         return data;
       } catch (error) {
-        console.error('Error submitting request:', error);
-        return { "error": error.toString() };
+        console.log('(B) Error submitting request:', error,{ "tx": this.convertKeysToSnakeCase(args), "tx_id": tx_id });
+        return { "error": error.toString(),"data":{ "tx": this.convertKeysToSnakeCase(args), "tx_id": tx_id } };
       }
     }
 }

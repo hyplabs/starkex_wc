@@ -1,18 +1,22 @@
 {
-    "DepositRequest": {
-        "gatewayFunction": "deposit",
-        "gatewayArgs": [ "tokenId", "vaultId", "amount", "starkKey", "type","txId"]
+    "DEPOSIT": {
+        "gatewayFunction": "/add_transaction",
+        "gatewayArgs": [ "positionId", "amount", "publicKey", "type","txId"]
     },    
+    "DepositRequest": {
+        "gatewayFunction": "/v2/gateway/add_transaction",
+        "gatewayArgs": [ "tokenId", "vaultId", "amount", "starkKey", "type","txId"]
+    },      
     "WithdrawalRequest": {
-        "gatewayFunction": "withdrawal",
+        "gatewayFunction": "/v2/gateway/add_transaction",
         "gatewayArgs": [ "tokenId", "vaultId", "amount", "starkKey", "type","txId"]
     },        
     "TransferRequest": {
+        "gatewayFunction": "/v2/gateway/add_transaction",
+        "gatewayArgs": ["senderPublicKey","txId","signature","type","amount", "nonce", "senderVaultId", "token", "receiverVaultId", "receiverPublicKey", "expirationTimestamp"],
         "hashFunction": "getTransferMsgHash",
         "hashArgs": [ "amount", "nonce", "senderVaultId", "token", "receiverVaultId", "receiverPublicKey", "expirationTimestamp"],
         "hashFunctionWithFee": "getTransferMsgHashWithFee",
-        "hashArgsWithFee":["amount","nonce","senderVaultId","token","receiverVaultId","receiverPublicKey","expirationTimestamp","feeInfoUser.token","feeInfoUser.sourceVaultId","feeInfoUser.feeLimit"],        
-        "gatewayFunction": "transfer",
-        "gatewayArgs": ["senderPublicKey","txId","signature","type","amount", "nonce", "senderVaultId", "token", "receiverVaultId", "receiverPublicKey", "expirationTimestamp"]
+        "hashArgsWithFee":["amount","nonce","senderVaultId","token","receiverVaultId","receiverPublicKey","expirationTimestamp","feeInfoUser.token","feeInfoUser.sourceVaultId","feeInfoUser.feeLimit"]        
     }
 }

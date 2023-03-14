@@ -1,0 +1,18 @@
+{
+    "DepositRequest": {
+        "gatewayFunction": "deposit",
+        "gatewayArgs": [ "tokenId", "vaultId", "amount", "starkKey", "type","txId"]
+    },    
+    "WithdrawalRequest": {
+        "gatewayFunction": "withdrawal",
+        "gatewayArgs": [ "tokenId", "vaultId", "amount", "starkKey", "type","txId"]
+    },        
+    "TransferRequest": {
+        "hashFunction": "getTransferMsgHash",
+        "hashArgs": [ "amount", "nonce", "senderVaultId", "token", "receiverVaultId", "receiverPublicKey", "expirationTimestamp"],
+        "hashFunctionWithFee": "getTransferMsgHashWithFee",
+        "hashArgsWithFee":["amount","nonce","senderVaultId","token","receiverVaultId","receiverPublicKey","expirationTimestamp","feeInfoUser.token","feeInfoUser.sourceVaultId","feeInfoUser.feeLimit"],        
+        "gatewayFunction": "transfer",
+        "gatewayArgs": ["senderPublicKey","txId","signature","type","amount", "nonce", "senderVaultId", "token", "receiverVaultId", "receiverPublicKey", "expirationTimestamp"]
+    }
+}

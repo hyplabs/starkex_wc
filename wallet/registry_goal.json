@@ -1,0 +1,80 @@
+{
+            "DepositRequest": {
+                "gatewayFunction": "deposit",
+                "gatewayArgs": [ "tokenId", "vaultId", "amount", "starkKey", "type","txId"],
+                "args": [ "tokenId", "vaultId", "amount", "starkKey", "type", "nonce"],
+                "hashArgs": [ "tokenId", "vaultId", "amount", "starkKey", "type"]
+            },    
+            "WithdrawalRequest": {
+                "gatewayFunction": "withdrawal",
+                "gatewayArgs": [ "tokenId", "vaultId", "amount", "starkKey", "type","txId"],
+                "args": [ "tokenId", "vaultId", "amount", "starkKey", "type", "nonce"],
+                "hashArgs": [ "tokenId", "vaultId", "amount", "starkKey", "type"]
+            },        
+            "TransferRequest": {
+                "args": [ "systemId","amount", "nonce", "senderVaultId", "token", "receiverVaultId", "receiverPublicKey", "expirationTimestamp"],
+                "hashFunction": "getTransferMsgHash",
+                "hashArgs": [ "amount", "nonce", "senderVaultId", "token", "receiverVaultId", "receiverPublicKey", "expirationTimestamp"],
+                "gatewayFunction": "transfer",
+                "gatewayArgs": ["senderPublicKey","txId","signature","type","amount", "nonce", "senderVaultId", "token", "receiverVaultId", "receiverPublicKey", "expirationTimestamp"]
+            },
+            "SpotConditionalTransferRequest": {
+                "hashFunction": "getTransferMsgHash",
+                "gatewayFunction": "conditionalTransfer",
+                "args": ["systemId","amount", "nonce", "senderVaultId", "token", "receiverVaultId", "receiverPublicKey", "expirationTimestamp", "receiverPublicKey"],
+                "hashArgs": ["amount", "nonce", "senderVaultId", "token", "receiverVaultId", "receiverPublicKey", "expirationTimestamp", "receiverPublicKey"]
+            },
+            "SpotOrderRequest": {
+                "hashFunction": "getLimitOrderMsgHash",
+                "gatewayFunction": "UNKNOWN",
+                "args": ["systemId","vaultIdSell", "vaultIdBuy", "amountSell", "amountBuy", "tokenSell", "tokenBuy", "nonce", "expirationTimestamp"],
+                "hashArgs": ["vaultIdSell", "vaultIdBuy", "amountSell", "amountBuy", "tokenSell", "tokenBuy", "nonce", "expirationTimestamp"]
+            },
+            "SpotLimitOrderRequest": {
+                "args": ["systemId","type", "amountBuy", "amountSell", "feeLimit", "feeToken", "feeVaultId", "nonce", "expirationTimestamp", "tokenBuy", "tokenSell", "vaultBuy", "vaultSell"],
+                "hashArgs": ["type", "amountBuy", "amountSell", "feeLimit", "feeToken", "feeVaultId", "nonce", "expirationTimestamp", "tokenBuy", "tokenSell", "vaultBuy", "vaultSell"]
+            },
+            "SpotLimitOrderWithFeesRequest": {
+                "args": ["systemId","type", "amountBuy", "amountSell", "feeLimit", "feeToken", "feeVaultId", "nonce", "expirationTimestamp", "tokenBuy", "tokenSell", "vaultBuy", "vaultSell"],
+                "hashArgs": ["amountBuy", "amountSell", "feeLimit", "feeToken", "feeVaultId", "nonce", "expirationTimestamp", "tokenBuy", "tokenSell", "vaultBuy", "vaultSell"]
+            },
+            "SpotMultiAssetOrderOffchainRequest": {
+                "args": ["unknown"],
+                "hashArgs": ["unknown"]
+            },
+            
+            "SpotTransferWithFeesRequest": {
+                "args": ["systemId","type", "amount", "feeLimit", "feeToken", "feeVaultId", "nonce", "expirationTimestamp", "receiverPublicKey", "receiverVaultId", "senderVaultId", "token"],
+                "hashArgs": ["type", "amount", "feeLimit", "feeToken", "feeVaultId", "nonce", "expirationTimestamp", "receiverPublicKey", "receiverVaultId", "senderVaultId", "token"]
+            },
+            "SpotConditionalTransferWithFeesRequest": {
+                "args": ["systemId","type", "amount", "feeLimit", "feeToken", "feeVaultId", "nonce", "expirationTimestamp", "receiverPublicKey", "receiverVaultId", "senderVaultId", "token", "condition"],
+                "hashArgs": ["type", "amount", "feeLimit", "feeToken", "feeVaultId", "nonce", "expirationTimestamp", "receiverPublicKey", "receiverVaultId", "senderVaultId", "token"]                 
+            },
+            "SpotMultiAssetOrderOffchainRequest": {
+                "args": ["systemId","type", "expirationTimestamp", "give", "nonce", "receive"],
+                "hashArgs": ["type", "expirationTimestamp", "give", "nonce", "receive"]
+            },
+            "PerpetualLimitOrderRequest": {
+                "args": ["unknown"],
+                "hashArgs": ["unknown"]
+            },
+            "PerpetualWithdrawalRequest": {
+                "args": ["unknown"],
+                "hashArgs": ["unknown"]
+            },
+            "PerpetualTransferRequest": {
+                "args": ["systemId","type", "assetId", "assetIdFee", "amount", "maxAmountFee", "nonce", "receiverPublicKey", "receiverPositionId", "senderPositionId", "srcFeePositionId", "expirationTimestamp"],
+                "hashArgs": ["type", "assetId", "assetIdFee", "amount", "maxAmountFee", "nonce", "receiverPublicKey", "receiverPositionId", "senderPositionId", "srcFeePositionId", "expirationTimestamp"]
+                
+            },
+            "PerpetualConditionalTransferRequest": {
+                "args": ["systemId","type", "assetId", "assetIdFee", "amount", "condition", "maxAmountFee", "nonce", "receiverPublicKey", "receiverPositionId", "senderPositionId", "srcFeePositionId", "expirationTimestamp"],
+                "hashArgs": ["type", "assetId", "assetIdFee", "amount", "condition", "maxAmountFee", "nonce", "receiverPublicKey", "receiverPositionId", "senderPositionId", "srcFeePositionId", "expirationTimestamp"]
+            },
+
+            "PerpetualWithdrawalToAddressRequest": {
+                "args": ["systemId","type", "amount", "assetIdCollateral", "ethAddress", "nonce", "expirationTimestamp", "positionId"],
+                "hashArgs": ["type", "amount", "assetIdCollateral", "ethAddress", "nonce", "expirationTimestamp", "positionId"]
+            }
+        }

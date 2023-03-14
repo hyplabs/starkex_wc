@@ -1,5 +1,4 @@
 const {IService} = require('./ServiceManager.js');
-//const StarkExAPI = require('@starkware-industries/starkex-js');
 const starkwareCrypto = require('@starkware-industries/starkware-crypto-utils');
 const crypto = require('crypto');
 const StarkExAPI = require('./StarkExConnection.js');
@@ -19,16 +18,6 @@ class StarkExGateway /* implements IService */ {
         this.starkExUri = undefined;
         if (uri)
             this.starkExUri = uri;
-        /*
-        this.sendTransactionFuncs= {
-            "DepositRequest": 'deposit',
-            "WithdrawalRequest": 'withdrawal',
-            "SettlementRequest": 'settlement',
-            "TransferRequest": 'transfer',
-            "ConditionalTransferRequest": 'conditionalTransfer',
-            "MultiTransactionRequest": 'multiTransaction',
-        };*/
-        
         this.loadRegistry(remote_url).then((reg)=>{this.registry =reg;});        
     }
 
@@ -82,7 +71,6 @@ class StarkExGateway /* implements IService */ {
      * @return {string}
      */        
     serviceName(){
-        console.log("starkexgate----------------------------------------------------------------------");
         return "starkexgate"
     } 
 
@@ -101,55 +89,59 @@ class StarkExGateway /* implements IService */ {
     methodRoles(){
         let roles = {
             "admin": { 
-                "getTransaction":this.getTransaction.bind(this),
                 "sendTransaction":this.sendTransaction.bind(this),
                 "set_gateway":this.set_gateway.bind(this),
                 "getFirstUnusedTxId":this.getFirstUnusedTxId.bind(this),
-                "getTransaction":this.getTransaction.bind(this),
             
             },
             "user" : {
-                "getTransaction":this.getTransaction.bind(this),
                 "sendTransaction":this.sendTransaction.bind(this),
                 "set_gateway":this.set_gateway.bind(this),
                 "getFirstUnusedTxId":this.getFirstUnusedTxId.bind(this),
-                "getTransaction":this.getTransaction.bind(this),
             }
         }; 
         return roles;
     }
 
     async set_gateway(args,metadata) {
-        if (args.providerUrl)
+        if (args.providerUrl && args.getFirstUnusedTxIdUrl)
         {
             this.settings.providerUrl = args.providerUrl;
+            this.settings.getFirstUnusedTxIdUrl = args.getFirstUnusedTxIdUrl;
             return true;
         }
         return false;
     }
     
+
+    /*
     async getTransaction(args,metadata) {
-        let starkExAPI = new StarkExAPI({endpoint: "https://gw.playground-v2.starkex.co"});            
+        if( this.settings.providerUrl == undefined) 
+            return {"error":"set_gateway() to a valid endpoint before submitting queries"};        
+        
+        // https://perpetual-playground-v2.starkex.co
+        // https://gw.playground-v2.starkex.co
+        let starkExAPI = new StarkExAPI({endpoint: this.settings.providerUrl});            
         return await starkExAPI.gateway.getTransaction(args.txId);
-    }
+    }*/
 
     async getFirstUnusedTxId(args,metadata) {
+        
+
+        
+        if( this.settings.providerUrl == undefined) 
+            return {"error":"set_gateway() to a valid endpoint before submitting queries"};        
+        if( this.settings.getFirstUnusedTxIdUrl == undefined) 
+            return {"error":"set_gateway() to a valid getFirstUnusedTxIdUrl before submitting queries"};        
         let val;
         try 
         {
-            let starkExAPI = new StarkExAPI({endpoint: "https://gw.playground-v2.starkex.co"});            
-            console.log("starkExAPI!!!!!!!!!!!!!!!!!!!");
-            console.log(JSON.stringify(starkExAPI.gateway));
-            console.log(JSON.stringify(starkExAPI.gateway.getFirstUnusedTxId));
-            let val = await starkExAPI.gateway.getFirstUnusedTxId();
-            console.log(val);
+            let starkExAPI = new StarkExAPI({endpoint: this.settings.providerUrl});            
+            let val = await starkExAPI.gateway.get(this.settings.getFirstUnusedTxIdUrl);
             return val;
         } 
         catch (e) 
         {
-            console.log("error val")
-            console.log(val)
-            console.log(e)
             return val
         }        
         
@@ -158,6 +150,10 @@ class StarkExGateway /* implements IService */ {
     async sendTransaction(args,metadata) {
         let txId;
         let response;
+        if( this.settings.providerUrl == undefined) 
+            return {"error":"set_gateway() to a valid endpoint before submitting queries"};        
+
+        
         try 
         {
             txId = await this.getFirstUnusedTxId({},{});
@@ -180,7 +176,8 @@ class StarkExGateway /* implements IService */ {
         let methodName = "unknown";
         try 
         {
-            let starkExAPI = new StarkExAPI({endpoint: "https://gw.playground-v2.starkex.co"});            
+            
+            let starkExAPI = new StarkExAPI({endpoint: this.settings.providerUrl});            
             Object.assign(args, {txId});
             methodName = this.registry[args.type]['gatewayFunction'];
             
@@ -193,14 +190,7 @@ class StarkExGateway /* implements IService */ {
             subArgs = Object.fromEntries(
               Object.entries(args).filter(([key, value]) => tempateArgs.includes(key))
             );            
-            console.log("SUBARGS----------------------------------------------------");
-            console.log(methodName);
-            console.log(subArgs);
-            console.log(starkExAPI);
-            console.log(starkExAPI.gateway);
-            console.log("END----------------------------------------------------");
-            response = await starkExAPI.gateway[methodName](subArgs);
-            console.log(subArgs);
+            response = await starkExAPI.gateway.post(subArgs,methodName);
         } catch (e) {
             return {"error":`Could not send transaction ${JSON.stringify(subArgs)} with ${methodName} ${e.message}. Stack trace: ${e.stack} `}
         }

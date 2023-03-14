@@ -30,8 +30,7 @@ const WCApp = require( '../web3modal/src/components/WCApp.js')
 const config = require('../config.json');
 //const spottx = require('spottx.json');
 const path = require('path');
-const spottx = require(path.join(__dirname, 'spottx.json'));
-const spottx_signed = require(path.join(__dirname, 'spottx_signed.json'));
+const transactions = require(path.join(__dirname, 'transactions.json'));
 
 
 jest.setTimeout(60000);
@@ -69,7 +68,7 @@ doGenerateAccount = async (app,admin) => {
   }
 
   test('Test System', async () => {
-    jest.setTimeout(30000);
+    //jest.setTimeout(30000);
     const dom = new JSDOM();
     global.document = dom.window.document;
     const projectId = config.projectID;
@@ -143,101 +142,39 @@ doGenerateAccount = async (app,admin) => {
 
     let starkKey = accountResults['starkResponse']['starkKey'];
       
-    res =await app.request( "set_gateway", "starkexgate", {"providerUrl":"https://gw.playground-v2.starkex.co"});
-    expect(res).toEqual(true);
-    
-      
-    // Some test requests
-    /*
-    await doTestTransaction({"type":"TransferRequest",
-      systemId: '1',
-      amount: '1001',
-      nonce: 1519522183,
-      senderPublicKey: '0x59a543d42bcc9475917247fa7f136298bb385a6388c3df7309955fcb39b8dd4',
-      senderVaultId: 1,
-      token: '0x3003a65651d3b9fb2eff934a4416db301afd112a8492aaf8d7297fc87dcd9f4',
-      receiverPublicKey: '0x5fa3383597691ea9d827a79e1a4f0f7949435ced18ca9619de8ab97e661020',
-      receiverVaultId: 1,
-      expirationTimestamp: 438953},app,admin,expect);*/
-      
-    let tx_add = 0;  
-    
-    for (let i = 0; i < spottx.length; i++) {
-      spottx[i]['systemId'] = 1;
-      await doTestTransaction(spottx[i], app, admin, expect, false, tx_add);
-      tx_add = tx_add +1;
-    }
-      
-    //for (let i = 0; i < spottx_signed.length; i++) {
-    //  spottx_signed[i]['systemId'] = 1;
-    //  await doTestTransaction(spottx_signed[i], app, admin, expect, true, tx_add);
-    //  tx_add = tx_add +2;
-    //}
-      
-      
-    
-      
-    // DEPOSIT --------------------------------------------------------------------
-    // WITH FEES --------------------------------------------------------------------
-    /*
-    await doTestTransaction({
-        systemId: '1',
-        type: "TransferRequest",
-        amount: '1000',
-        nonce: 1519522183,
-        senderPublicKey: '0x59a543d42bcc9475917247fa7f136298bb385a6388c3df7309955fcb39b8dd4',
-        senderVaultId: 1,
-        token: '0x3003a65651d3b9fb2eff934a4416db301afd112a8492aaf8d7297fc87dcd9f4',
-        receiverPublicKey: '0x5fa3383597691ea9d827a79e1a4f0f7949435ced18ca9619de8ab97e661020',
-        receiverVaultId: 1,
-        expirationTimestamp: 438953,
-        feeInfoUser: {
-            token: '0x3003a65651d3b9fb2eff934a4416db301afd112a8492aaf8d7297fc87dcd9f4',
-            feeLimit: "0",
-            sourceVaultId: 3            
+    let testingConfigurations = [
+        {
+            providerUrl:"https://perpetual-playground-v2.starkex.co",
+            getFirstUnusedTxIdUrl:"/get_first_unused_tx_id",
+            test_types : ['perpetual_signed','perpetual']
         },
-        "feeToken",   
-        "feeVaultId",
-        "feeLimit"
-        feeInfoExchange: {
-            destinationStarkKey: '0x041ee3cca9025d451b8b3cc780829ec2090ef538b6940df1e264aaf19fb62f80',
-            destinationVaultId: 4,
-            feeTaken: 0
-        }},app,admin,expect);
-        
-,    
-    {
-        "systemId": "1",
-        "type": "TransferRequestWithFees",
-        "amount": "1000",
-        "nonce": 1519522183,
-        "senderPublicKey": "0x59a543d42bcc9475917247fa7f136298bb385a6388c3df7309955fcb39b8dd4",
-        "senderVaultId": 1,
-        "token": "0x3003a65651d3b9fb2eff934a4416db301afd112a8492aaf8d7297fc87dcd9f4",
-        "receiverPublicKey": "0x5fa3383597691ea9d827a79e1a4f0f7949435ced18ca9619de8ab97e661020",
-        "receiverVaultId": 1,
-        "expirationTimestamp": 438953,
-        "feeInfoUser": {
-            "token": "0x3003a65651d3b9fb2eff934a4416db301afd112a8492aaf8d7297fc87dcd9f4",
-            "feeLimit": "0",
-            "sourceVaultId": 3
-        },
-        "feeInfoExchange": {
-            "destinationStarkKey": "0x041ee3cca9025d451b8b3cc780829ec2090ef538b6940df1e264aaf19fb62f80",
-            "destinationVaultId": 4,
-            "feeTaken": 1
+        {
+            providerUrl:"https://gw.playground-v2.starkex.co",
+            getFirstUnusedTxIdUrl:"/v2/gateway/testing/get_first_unused_tx_id",
+            test_types : ['spot_signed','spot']
+        }        
+    ];
+      
+      
+    for (let j = 0; j < testingConfigurations.length; j++) {
+        let tstcfg = testingConfigurations[j];  
+        let tx_add = 0;  
+        res =await app.request( "set_gateway", "starkexgate", {"providerUrl":tstcfg.providerUrl,
+                                                              "getFirstUnusedTxIdUrl":tstcfg.getFirstUnusedTxIdUrl});
+        expect(res).toEqual(true);
+        let getFirstUnusedTxId  = await app.request("getFirstUnusedTxId","starkexgate", {});      
+        expect(getFirstUnusedTxId.toString()).toMatch(/^[0-9]{1,100}$/);
+        for (let i = 0; i < transactions.length; i++) {
+          let tx = {...transactions[i]} 
+          tx['systemId'] = 1;
+          if (tstcfg.test_types.includes(tx['test_type']) )
+          {
+              let signIt = tx['test_type'].includes("_signed");
+              await doTestTransaction(tx, app, admin, expect, signIt, tx_add);
+          }
+          tx_add = tx_add +1;
         }
-    }        
-        
-        */
-      
-      
-      
-      
-      
-    // PERPETUAL --------------------------------------------------------------------
-    // WITH FEES --------------------------------------------------------------------
-    //console.log(spottx);
-      
+    }
+    
     
   });
