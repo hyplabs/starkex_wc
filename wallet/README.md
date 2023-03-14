@@ -20,7 +20,7 @@ git clone https://github.com/THE_FINAL_REPO_LOCATION
 
 ## Getting Started
 - run "npm install". 
-- testing "npm run test", These tests use the IService classes to test the wallets
+- testing "npm run test" from the project root.
 
 ## Example Usage dApp + CLI
 - Head over to the dApp example. It uses WalletConnect, so you will need to run "npm start" to boot up the dApp.

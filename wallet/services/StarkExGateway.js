@@ -126,9 +126,6 @@ class StarkExGateway /* implements IService */ {
     }*/
 
     async getFirstUnusedTxId(args,metadata) {
-        
-
-        
         if( this.settings.providerUrl == undefined) 
             return {"error":"set_gateway() to a valid endpoint before submitting queries"};        
         if( this.settings.getFirstUnusedTxIdUrl == undefined) 
@@ -152,7 +149,6 @@ class StarkExGateway /* implements IService */ {
         let response;
         if( this.settings.providerUrl == undefined) 
             return {"error":"set_gateway() to a valid endpoint before submitting queries"};        
-
         
         try 
         {
@@ -190,7 +186,8 @@ class StarkExGateway /* implements IService */ {
             subArgs = Object.fromEntries(
               Object.entries(args).filter(([key, value]) => tempateArgs.includes(key))
             );            
-            response = await starkExAPI.gateway.post(subArgs,methodName);
+            let asTransaction = true;
+            response = await starkExAPI.gateway.post(subArgs,methodName,asTransaction);
         } catch (e) {
             return {"error":`Could not send transaction ${JSON.stringify(subArgs)} with ${methodName} ${e.message}. Stack trace: ${e.stack} `}
         }

@@ -48,8 +48,10 @@ class Gateway
       }
     }
 
-    async post(args, target_path) {
+    async post(args, target_path,as_transaction = false) {
       let tx_id = 0;
+      let reqs = { "error": "no request generated" };
+      
       try {
         if (!this.endpoint)
           return { "error": "no endpoint set" };
@@ -58,26 +60,31 @@ class Gateway
 
         tx_id = args.txId;
         delete args.txId;
-
+        
+        if (as_transaction == true)
+            reqs = { "tx": this.convertKeysToSnakeCase(args), "tx_id": tx_id };
+        else
+            reqs = this.convertKeysToSnakeCase(args) ;
+            
         const response = await fetch(this.endpoint + target_path, {
           method: 'POST',
-          body: JSON.stringify({ "tx": this.convertKeysToSnakeCase(args), "tx_id": tx_id }),
+          body: JSON.stringify(reqs),
           headers: {
             'Content-Type': 'application/json'
           }
         });
 
         if (!response.ok) {
-          console.log('(A) Error submitting request:', response.statusText,{ "tx": this.convertKeysToSnakeCase(args), "tx_id": tx_id });
-          return { "error": response.statusText,"data":{ "tx": this.convertKeysToSnakeCase(args), "tx_id": tx_id } };
+          console.log('(A) Error submitting request:', response.statusText,reqs);
+          return { "error": response.statusText,"data":reqs };
         }
 
         const data = await response.json();
         console.log('Request submitted successfully!', data);
         return data;
       } catch (error) {
-        console.log('(B) Error submitting request:', error,{ "tx": this.convertKeysToSnakeCase(args), "tx_id": tx_id });
-        return { "error": error.toString(),"data":{ "tx": this.convertKeysToSnakeCase(args), "tx_id": tx_id } };
+        console.log('(B) Error submitting request:', error,reqs);
+        return { "error": error.toString(),"data":reqs };
       }
     }
 }

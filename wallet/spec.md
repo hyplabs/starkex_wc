@@ -1,32 +1,32 @@
-# list_accounts() => Object
+# list_accounts
 Returns an object with the account names as public keys.
 
-# select_account(args: Object) => string | Object
+# select_account
 Returns the selected starkKey if it exists, or an object with an error property if it does not.
 
 * `args: Object`
   * `starkKey: string` - The starkKey associated with the account to select.
 * `metadata: Object`
 
-# generate_stark_account_from_public_key(args: Object) => Object
+# generate_stark_account_from_public_key
 Returns an object with the generated starkKey as a property. Adds the generated account to the settings accounts list. Only works if bound to a locally avaliable EthWallet via the ServiceManager.
 
 * `args: Object`
   * `publicKey: string` - The public key to generate the starkKey from.
 
 
-# generate_stark_account_from_private_key(args: Object) => Object
+# generate_stark_account_from_private_key
 Returns an object with the generated account and starkKey as properties. Adds the generated account to the settings accounts list. 
 
 * `args: Object`
   * `privateKey: string` - The private key to generate the account and starkKey from.
 
 
-# get_public_key() => Object
+# get_public_key
 Returns a promise that resolves to an object with the public keys of the existing accounts as keys.
 
-# generate_request_hash(args: Object)  => Object
-Returns a promise that resolves to a string representing the generated hash. Please see transactions.md for information on transactions.
+# generate_request_hash
+Returns a promise that resolves to a string representing the generated hash. Please see transactions.md for information on transactions. To understand supported transactions, and change the list of supported transactions, please see transactions.md
 
 * `args: Object`
   * `type: string` - The type of request (examples are of "TransferRequest", "ConditionalTransferRequest", or "OrderRequest").
@@ -46,13 +46,13 @@ Returns a promise that resolves to a string representing the generated hash. Ple
     * `sourceVaultId: number` - The vault ID of the fee payer.
     * `feeLimit: number` - The maximum fee allowed.
 
-# sign_message(args: Object) => Object
+# sign_message
 Returns a promise that resolves to an object with the message signature (`r` and `s` values) as properties.
 
 * `args: Object`
   * `hash: string?` - The hash of the message to sign. If not provided, the function will call generate_request_hash with `args` to generate the hash.
 
-# get_key_material(args: Object) => Object
+# get_key_material
 Returns a promise that resolves to an object with the deterministic random number generated from the key material as a property.
 
 * `args: Object`

@@ -16,7 +16,6 @@ If you are adding or maintaining the set of supported transactions, you will hav
 - `hashArgs: list<string>` - A list of arguments to pass too the hash function (starkwareCrypto\['hashFunction\](\{args\}))
 
 
-
 ## TransactionType: SpotTransferRequest
 Using the Spot API, you can initiate a transfer request.
 - `systemId: string` - A unique ID to a specific application.
@@ -156,7 +155,6 @@ Using the Perpetual API, you can initiate a transfer request for a perpetual con
 - `srcFeePositionId: number` - The position ID of the account paying the fee.
 - `expirationTimestamp: number` - The expiration timestamp for the request.
 
-
 ## TransactionType: PerpetualConditionalTransferRequest
 Using the Spot API, you can initiate a conditional transfer request for a perpetual contract.
 - `systemId: string` - A unique ID to a specific application.
@@ -173,7 +171,6 @@ Using the Spot API, you can initiate a conditional transfer request for a perpet
 - `srcFeePositionId: number` - The position ID of the account paying the fee.
 - `expirationTimestamp: number` - The expiration timestamp for the request.
 
-
 ## TransactionType: PerpetualWithdrawalToAddressRequest
 Using the Spot API, you can submit a withdrawal request for a perpetual contract, sending the funds to an Ethereum address.
 - `systemId: string` - A unique ID to a specific application.
@@ -184,4 +181,3 @@ Using the Spot API, you can submit a withdrawal request for a perpetual contract
 - `nonce: number` - A unique identifier for the request.
 - `expirationTimestamp: number` - The expiration timestamp for the request.
 - `positionId: number` - The position ID of the account making the withdrawal.
-

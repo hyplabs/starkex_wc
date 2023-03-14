@@ -6,7 +6,6 @@ From the / (root) directory, you can run "npm run test" and this will test the e
 
 If you are doign Test Driven Development, it is possible to extend these use cases with additional features, then to consult the arcitecture diagram to look for development or extension oppourtunities. 
 
-
 ## 1 - Extension Checklist
 If you would like to extend or create your own StarkEx wallet, this check list will lead you through the process.
 

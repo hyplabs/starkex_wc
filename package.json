@@ -4,7 +4,7 @@
   "description": "A an example wallet and a dApp using WalletConnect and StarkEx",
   "main": "index.js",
   "scripts": {
-    "test": "npx jest full.js",
+    "test": "npx jest transactions.js",
     "transact": "npx jest transactions.js"
   },
   "author": "Justin Girard",
