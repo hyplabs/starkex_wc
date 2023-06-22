@@ -1,0 +1,24 @@
+{
+  "name": "StarkEx dApp and CommonJs Wallet",
+  "version": "1.0.0",
+  "description": "A an example wallet and a dApp using WalletConnect and StarkEx",
+  "main": "index.js",
+  "scripts": {
+    "setup":"cp config.json ./wallet/config.json && cp config.json ./web3modal/src/config.json && cp registry.json ./wallet/registry.json && cp registry.json ./web3modal/public/registry.json  && cp registry.json ./web3modal/wallet/registry.json && cp transactions.json ./__tests__/transactions.json && cp transactions.json ./web3modal/src/transactions.json",
+    "test": "npm run setup & npx jest transactions.js",
+    "transact": "npx jest transactions.js"
+  },
+  "author": "Justin Girard",
+  "license": "MIT",
+  "dependencies": {
+    "@starkware-industries/starkex-js": "^0.1.0",
+    "@starkware-industries/starkware-crypto-utils": "^0.0.2",
+    "@walletconnect/core": "^2.2.1",
+    "@walletconnect/sign-client": "^2.2.1",
+    "bip39": "^3.0.4",
+    "ethereumjs-util": "^7.1.5",
+    "ethers": "^5.7.2",
+    "jsdom": "^21.1.0",
+    "lokijs": "^1.5.12"
+  }
+}

@@ -1,0 +1,99 @@
+[  
+    {
+        "gui_label":"WithdrawalRequest_1",
+        "test_type":"spot",
+        "tokenId": "0x1684540364b6a8bd392e54815ca5410e9a80dea82393c33f64ae2686d770882",
+        "vaultId": 316721330,
+        "amount": "10",
+        "starkKey": "0x2deb04eb807be0ec943e08d8f666521edb3f12833922fbbc7f93e1434ae810e",
+        "type": "WithdrawalRequest"
+    },
+    {
+        "gui_label":"WithdrawalRequest_2",
+        "test_type":"spot",
+        "tokenId": "0xa0107a220030eb34b9247f06cde3bbec2cc896e79b37f2435032dc5d38e78d",
+        "vaultId": 2027837527,
+        "amount": "5",
+        "starkKey": "0x2f116d013fb6ecae90765a876a5bfcf66cd6a6be1f85c9841629cd0bd080ed3",
+        "type": "WithdrawalRequest"
+    },       
+    {
+        "gui_label":"DepositRequest_1",
+        "test_type":"spot",
+        "tokenId": "0x0b333e3142fe16b78628f19bb15afddaef437e72d6d7f5c6c20c6801a27fba6",
+        "amount": "1000",
+        "vaultId": 1,
+        "starkKey": "0x041ee3cca9025d451b8b3cc780829ec2090ef538b6940df1e264aaf19fb62f80",
+        "type": "DepositRequest"
+    },
+    {
+        "gui_label":"DepositRequest_2",
+        "test_type":"spot",
+        "tokenId": "0x1ccf76bfc5bfbb2f1e16a724105f9e8f235e3979d0b06053c8a88d7158b8161",
+        "vaultId": 1806341205,
+        "amount": "7",
+        "starkKey": "0x2f116d013fb6ecae90765a876a5bfcf66cd6a6be1f85c9841629cd0bd080ed3",
+        "type": "DepositRequest"
+    },
+    {        
+      "gui_label":"TransferRequest_1",
+      "test_type":"spot_signed",
+      "type":"TransferRequest",
+      "amount": "1001",
+      "senderPublicKey": "0x59a543d42bcc9475917247fa7f136298bb385a6388c3df7309955fcb39b8dd4",
+      "senderVaultId": 1,
+      "token": "0x3003a65651d3b9fb2eff934a4416db301afd112a8492aaf8d7297fc87dcd9f4",
+      "receiverPublicKey": "0x5fa3383597691ea9d827a79e1a4f0f7949435ced18ca9619de8ab97e661020",
+      "receiverVaultId": 1,
+      "expirationTimestamp": 438953
+    },      
+    {
+        "gui_label":"DEPOSIT_1",
+        "test_type":"perpetual",
+        "amount": "2569146471088859254",
+        "positionId": "7758176404715800194",
+        "publicKey": "0x37ebdcde87a1613e443df789558867f5ba91faf7a024204f7c1bd874da5e70a",
+        "type": "DEPOSIT"
+    },
+  {
+    "gui_label":"SettlementRequest_1",
+    "test_type":"spot",
+    "type": "SettlementRequest",  
+    "settlement_info": {
+      "party_b_sold": "14",
+      "party_a_sold": "7"
+    },
+    "party_a_order": {
+      "token_sell": "0x1ccf76bfc5bfbb2f1e16a724105f9e8f235e3979d0b06053c8a88d7158b8161",
+      "nonce": 2046968324,
+      "vault_id_sell": 1806341205,
+      "vault_id_buy": 173879092,
+      "signature": {
+        "r": "0x512577b218a76bdb69c372181af1c6671d3dbf1995d8d23e29870d99c448eb0",
+        "s": "0x35739fb1c6414874c51a1200ab90e4927f08603c6676cbed8dbea836513f50a"
+      },
+      "amount_buy": "4611686018427387902",
+      "public_key": "0x2f116d013fb6ecae90765a876a5bfcf66cd6a6be1f85c9841629cd0bd080ed3",
+      "token_buy": "0xa0107a220030eb34b9247f06cde3bbec2cc896e79b37f2435032dc5d38e78d",
+      "amount_sell": "2305843009213693951",
+      "expiration_timestamp": 4194303,
+      "type": "OrderL2Request"
+    },
+    "party_b_order": {
+      "token_sell": "0xa0107a220030eb34b9247f06cde3bbec2cc896e79b37f2435032dc5d38e78d",
+      "nonce": 1537810351,
+      "vault_id_sell": 1112038970,
+      "vault_id_buy": 2087043557,
+      "signature": {
+        "r": "0x52aab038a4940daf6c70ebd80833c8b1a5d9665b65311283b776a70d1fb2c9a",
+        "s": "0x183410361e4cd6eeb8b633c459294fa3f65507560e9f2110387a844ae23f2b0"
+      },
+      "amount_buy": "2305843009213693951",
+      "public_key": "0xf8c6635f9cfe85f46759dc2eebe71a45b765687e35dbe5e74e8bde347813ef",
+      "token_buy": "0x1ccf76bfc5bfbb2f1e16a724105f9e8f235e3979d0b06053c8a88d7158b8161",
+      "amount_sell": "4611686018427387902",
+      "expiration_timestamp": 4194303,
+      "type": "OrderL2Request"
+    }
+  }    
+]   
